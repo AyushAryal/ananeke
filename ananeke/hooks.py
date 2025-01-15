@@ -23,7 +23,9 @@ app_license = "mit"
 
 # Includes in <head>
 # ------------------
-
+website_route_rules = [
+    {"from_route": "/sms-center", "to_route": "sms_center"}
+]
 # include js, css files in header of desk.html
 # app_include_css = "/assets/ananeke/css/ananeke.css"
 # app_include_js = "/assets/ananeke/js/ananeke.js"
@@ -43,10 +45,15 @@ app_license = "mit"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
-# doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
+doctype_js = {"Sales Order" : "public/js/sales_order.js"}
+
+doctype_list_js = {"Sales Invoice" : "public/js/sales_invoice_list.js",
+                   "SMS Center": "public/js/sms_center.js",
+                   "ToDo": "public/js/todo.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
+doctype_calendar_js = {"ToDo" : "public/js/todo_calendar.js"}
+
 
 # Svg Icons
 # ------------------
@@ -83,12 +90,12 @@ app_license = "mit"
 # ------------
 
 # before_install = "ananeke.install.before_install"
-# after_install = "ananeke.install.after_install"
+after_install = "ananeke.install.after_install"
 
 # Uninstallation
 # ------------
 
-# before_uninstall = "ananeke.uninstall.before_uninstall"
+before_uninstall = "ananeke.uninstall.before_uninstall"
 # after_uninstall = "ananeke.uninstall.after_uninstall"
 
 # Integration Setup
@@ -137,13 +144,11 @@ app_license = "mit"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"Sales Order": {
+		"before_save": "ananeke.methods.sales_order.sales_order",
+	}
+}
 
 # Scheduled Tasks
 # ---------------
