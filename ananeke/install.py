@@ -40,7 +40,6 @@ def add_custom_field(doc, after_field, field_details, section=None):
         print(f"Custom field '{field_details.get('field_name')}' already exists.")
 
 
-
 def field_generator():
     yield {
         "doc": "Sales Order",
@@ -48,7 +47,7 @@ def field_generator():
         "field_details": {
             "field_name": "service_date_time",
             "field_type": "Datetime",
-            "label": "Service Datetime "
+            "label": "Service Datetime"
         }
     }
     yield {
@@ -57,7 +56,7 @@ def field_generator():
         "field_details": {
             "field_name": "start_date_time",
             "field_type": "Datetime",
-            "label": "Start Datetime "
+            "label": "Start Datetime"
         }
     }
     yield {
@@ -66,21 +65,70 @@ def field_generator():
         "field_details": {
             "field_name": "end_date_time",
             "field_type": "Datetime",
-            "label": "End Datetime "
+            "label": "End Datetime"
         }
     }
-    
 
-def before_install():
-    ...
-    
+
+def update_field_property(doctype, fieldname, property_name, value):
+    if not frappe.db.exists(
+        "Property Setter",
+        {"doc_type": doctype, "field_name": fieldname, "property": property_name},
+    ):
+        frappe.get_doc({
+            "doctype": "Property Setter",
+            "doc_type": doctype,
+            "doctype_or_field": "DocField",
+            "field_name": fieldname,
+            "property": property_name,
+            "value": value,
+            "property_type": "Check" if isinstance(value, int) else "Data",
+        }).insert()
+        frappe.db.commit()
+        print(f"Property '{property_name}' for field '{fieldname}' in Doctype '{doctype}' updated to {value}.")
+    else:
+        print(f"Property Setter for '{property_name}' on '{fieldname}' in Doctype '{doctype}' already exists.")
 
 
 def after_install():
     for field in field_generator():
-        add_custom_field(
-            doc=field["doc"],
-            after_field=field["after_field"],
-            field_details=field["field_details"],
-            section=field.get("section")
+        try:
+            add_custom_field(
+                doc=field["doc"],
+                after_field=field["after_field"],
+                field_details=field["field_details"],
+                section=field.get("section"),
+            )
+        except Exception as e:
+            print(f"Error adding field '{field['field_details']['field_name']}': {e}")
+
+    try:
+        update_field_property(
+            doctype="Sales Order",
+            fieldname="delivery_date",
+            property_name="in_list_view",
+            value=0,
         )
+    except Exception as e:
+        print(f"Error updating 'delivery_date' in 'Sales Order': {e}")
+
+    try:
+        update_field_property(
+            doctype="Sales Order",
+            fieldname="cost_center",
+            property_name="in_list_filter",
+            value=1,
+        )
+    except Exception as e:
+        print(f"Error updating 'cost_center' in 'Sales Order': {e}")
+
+    try:
+        update_field_property(
+            doctype="ToDo",
+            fieldname="date",
+            property_name="in_list_view",
+            value=0,
+        )
+    except Exception as e:
+        print(f"Error updating 'date' in 'ToDo': {e}")
+

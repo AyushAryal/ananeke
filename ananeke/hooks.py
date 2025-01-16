@@ -45,11 +45,14 @@ website_route_rules = [
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {"Sales Order" : "public/js/sales_order.js"}
+doctype_js = {"Sales Order" : "public/js/sales_order.js",
+              "SMS Center": "public/js/sms_center.js",
+              "ToDo": "public/js/todo.js"}
 
 doctype_list_js = {"Sales Invoice" : "public/js/sales_invoice_list.js",
-                   "SMS Center": "public/js/sms_center.js",
-                   "ToDo": "public/js/todo.js"}
+                   "Sales Order": "public/js/sales_order_list.js",
+                   "ToDo": "public/js/todo_listview.js"
+                   }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 doctype_calendar_js = {"ToDo" : "public/js/todo_calendar.js"}
@@ -147,6 +150,9 @@ before_uninstall = "ananeke.uninstall.before_uninstall"
 doc_events = {
 	"Sales Order": {
 		"before_save": "ananeke.methods.sales_order.sales_order",
+	},
+    "ToDo": {
+		"before_save": "ananeke.methods.todo.todo",
 	}
 }
 
@@ -183,6 +189,10 @@ doc_events = {
 # 	"frappe.desk.doctype.event.event.get_events": "ananeke.event.get_events"
 # }
 #
+override_whitelisted_methods = {
+    "frappe.desk.listview.get_list_view_fields": "ananeke.overrides.todo_override.custom_get_list_view_fields"
+}
+
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
 # along with any modifications made in other Frappe apps
