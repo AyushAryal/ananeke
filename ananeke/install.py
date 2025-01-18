@@ -132,3 +132,13 @@ def after_install():
     except Exception as e:
         print(f"Error updating 'date' in 'ToDo': {e}")
 
+    try:
+        update_field_property(
+            doctype="Item",
+            fieldname="standard_rate",
+            property_name="in_list_view",
+            value=1,
+        )
+    except Exception as e:
+        print(f"Error updating 'standard_rate' in 'Item': {e}")
+
