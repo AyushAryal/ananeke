@@ -90,35 +90,6 @@ def update_field_property(doctype, fieldname, property_name, value):
         print(f"Property Setter for '{property_name}' on '{fieldname}' in Doctype '{doctype}' already exists.")
 
 
-
-def create_frontdesk_workspace():
-    workspace = frappe.get_doc({
-        "doctype": "Workspace",
-        "name": "frontdesk-workspace",  # Explicitly setting a unique name
-        "title": "Frontdesk Workspace", 
-        "is_standard": 0,  # Set to 0 for custom workspaces
-        "module": "Ananeke",  # Replace with your module's name
-        "for_user": None,  # For all users with the specified role
-        "restrict_to_domain": None,
-        "public": 0,  # Set to 1 if you want it to be visible to all users
-        "hide_custom": 0,
-        "onboard": 0,
-        "extendable": 0,
-        "role": ["Frontdesk"],  # Role to restrict this workspace
-    })
-
-    try:
-        # Insert the workspace into the database
-        workspace.insert(ignore_permissions=True)
-        frappe.db.commit()
-        frappe.msgprint(f"Workspace '{workspace.title}' created successfully!")
-    except Exception as e:
-        frappe.log_error(f"Error creating workspace: {str(e)}", "Workspace Creation Error")
-        raise
-
-
-
-
 def after_install():
     for field in field_generator():
         try:
@@ -171,5 +142,4 @@ def after_install():
     except Exception as e:
         print(f"Error updating 'standard_rate' in 'Item': {e}")
 
-    create_frontdesk_workspace()
 
