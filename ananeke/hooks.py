@@ -179,7 +179,16 @@ doc_events = {
 
 # Testing
 # -------
-
+fixtures = [
+    {
+        "dt": "Role",
+        "filters": [["name", "=", "Frontdesk"]]
+    },
+    {
+        "dt": "Custom DocPerm",
+        "filters": [["role", "=", "Frontdesk"]]
+    }
+]
 # before_tests = "ananeke.install.before_tests"
 
 # Overriding Methods
