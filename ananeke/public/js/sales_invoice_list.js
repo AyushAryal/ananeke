@@ -1,9 +1,25 @@
 frappe.listview_settings['Sales Invoice'] = {
+    get_indicator: function (doc) {
+		const status_colors = {
+			Draft: "red",
+			Unpaid: "orange",
+			Paid: "green",
+			Return: "gray",
+			"Credit Note Issued": "gray",
+			"Unpaid and Discounted": "orange",
+			"Partly Paid and Discounted": "yellow",
+			"Overdue and Discounted": "red",
+			Overdue: "red",
+			"Partly Paid": "yellow",
+			"Internal Transfer": "darkgrey",
+		};
+		return [__(doc.status), status_colors[doc.status], "status,=," + doc.status];
+	},
     onload: function (listview) {
+        
         listview.page.add_inner_button('Message Selections', () => {
             const selected_items = listview.get_checked_items();
             
-            // If no invoices are selected, show a message
             if (!selected_items.length) {
                 frappe.msgprint({
                     title: __('No Selection'),
@@ -20,11 +36,10 @@ frappe.listview_settings['Sales Invoice'] = {
             frappe.call({
                 method: "ananeke.methods.sales_invoice.get_customer_numbers",
                 args: {
-                    invoices: selected_names, // Pass invoice IDs
+                    invoices: selected_names,
                 },
                 callback: function (r) {
                     if (r && r.message) {
-                        // Ensure r.message.contacts is an array
                         if (Array.isArray(r.message.contacts) && r.message.contacts.length > 0) {
                             customer_numbers.push(...r.message.contacts); // Add contacts to the customer_numbers array
                         }
@@ -38,13 +53,9 @@ frappe.listview_settings['Sales Invoice'] = {
                         });
                         return;
                     }
-            
-                    // Redirect with the numbers
                     window.location.href = `/app/sms-center?receivers=${encodeURIComponent(customer_numbers.join(','))}`;
                 }
             });
-            
-        
         });
     },
 };
