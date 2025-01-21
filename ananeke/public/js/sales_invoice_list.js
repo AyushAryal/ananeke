@@ -16,7 +16,6 @@ frappe.listview_settings['Sales Invoice'] = {
 		return [__(doc.status), status_colors[doc.status], "status,=," + doc.status];
 	},
     onload: function (listview) {
-        
         listview.page.add_inner_button('Message Selections', () => {
             const selected_items = listview.get_checked_items();
             

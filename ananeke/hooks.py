@@ -47,6 +47,7 @@ website_route_rules = [
 # include js in doctype views
 doctype_js = {"Sales Order" : "public/js/sales_order.js",
               "SMS Center": "public/js/sms_center.js",
+              "Customer": "public/js/customer.js",
               "ToDo": "public/js/todo.js"}
 
 doctype_list_js = {"Sales Invoice" : "public/js/sales_invoice_list.js",
