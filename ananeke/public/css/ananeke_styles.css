@@ -1,0 +1,33 @@
+.btn {
+    background-color: #dfc8e2 !important;
+    color: rgb(19, 4, 4) !important;
+    border-color: #dfc8e2 !important;
+}
+
+.btn-primary {
+    background-color: #97569f !important;
+    font-weight: bold !important;
+    color: white !important;
+    border-color: #97569f !important;
+}
+
+.navbar-expand {
+    background-color: #dfc8e2 !important;
+    height: 65px !important;
+}
+
+.app-logo {
+    max-height: 50px !important;
+    border-radius: 15px !important;
+    overflow: hidden !important;
+}
+
+svg.es-icon.icon-sm {
+        width: 22px !important;
+        height: 22px !important;
+    }
+
+/* footer{
+    background-color: #dfc8e2 !important;
+    height: 40px !important;
+} */

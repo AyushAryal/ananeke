@@ -27,7 +27,7 @@ website_route_rules = [
     {"from_route": "/sms-center", "to_route": "sms_center"}
 ]
 # include js, css files in header of desk.html
-# app_include_css = "/assets/ananeke/css/ananeke.css"
+app_include_css = "/assets/ananeke/css/ananeke_styles.css"
 # app_include_js = "/assets/ananeke/js/ananeke.js"
 
 # include js, css files in header of web template
@@ -43,6 +43,8 @@ website_route_rules = [
 
 # include js in page
 # page_js = {"page" : "public/js/file.js"}
+page_js = {"page" : "public/js/custom.js"}
+
 
 # include js in doctype views
 doctype_js = {"Sales Order" : "public/js/sales_order.js",
@@ -52,6 +54,7 @@ doctype_js = {"Sales Order" : "public/js/sales_order.js",
 
 doctype_list_js = {"Sales Invoice" : "public/js/sales_invoice_list.js",
                    "Sales Order": "public/js/sales_order_list.js",
+                   "Customer": "public/js/customer_list.js",
                    "ToDo": "public/js/todo_listview.js"
                    }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
