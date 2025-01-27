@@ -28,6 +28,7 @@ website_route_rules = [
 ]
 # include js, css files in header of desk.html
 app_include_css = "/assets/ananeke/css/ananeke_styles.css"
+app_include_js = "/assets/ananeke/js/notification.js"
 # app_include_js = "/assets/ananeke/js/ananeke.js"
 
 # include js, css files in header of web template
@@ -153,7 +154,7 @@ before_uninstall = "ananeke.uninstall.before_uninstall"
 
 doc_events = {
 	"Sales Order": {
-		"before_save": "ananeke.methods.sales_order.sales_order",
+		"on_submit": "ananeke.methods.sales_order.sales_order",
 	},
     "ToDo": {
 		"before_save": "ananeke.methods.todo.todo",

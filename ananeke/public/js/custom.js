@@ -20,3 +20,4 @@
   
 //   // Call the function on page load
 //   frappe.ui.toolbar.add_footer();
+

@@ -1,6 +1,9 @@
 import click
 import frappe
 from frappe import _
+from .utils import add_custom_field
+from frappe.custom.doctype.custom_field.custom_field import create_custom_field
+
 
 def delete_workspace_with_sql():
     workspace_name = "Frontdesk"
@@ -85,6 +88,89 @@ def create_workspace_command():
     finally:
         frappe.destroy()
 
+# -----------------------------------------------------------------------------------------------------------------
+
+
+
+@click.command('create-assign-to-column')
+def create_column():
+    try:
+        frappe.init(site="site.wallet")
+        frappe.connect()
+        field_definition = {
+        "fieldname": "assign_to",
+        "label": "Assign To",
+        "fieldtype": "Link",
+        "options": "Employee", 
+        "insert_after": "description",
+        "read_only": 0,
+        "in_list_view": 1,
+        "mandatory": 0,
+    }
+        create_custom_field("Sales Order Item", field_definition)
+        create_custom_field("Sales Invoice Item", field_definition)
+       
+    except Exception as e:
+        click.echo(f"Error: {str(e)}")
+    finally:
+        frappe.destroy()
+
+
+@click.command('add-commision-on-item')
+def add_commsion_on_item():
+    try:
+        frappe.init(site="site.wallet")
+        frappe.connect()
+        field = {
+        "doc": "Item",
+        "after_field": "has_variants",
+        "field_details": {
+            "field_name": "commission_value",
+            "field_type": "Float",
+            "label": "Commision Value"
+        }}
+
+        add_custom_field(
+                    doc=field["doc"],
+                    after_field=field["after_field"],
+                    field_details=field["field_details"],
+                    section=field.get("section"),
+                )
+       
+    except Exception as e:
+        click.echo(f"Error: {str(e)}")
+    finally:
+        frappe.destroy()
+
+
+# @click.command('add-dashboard-calendar')
+# def add_dashboard_calendar():
+#     try:
+#         frappe.init(site="site.wallet")
+#         frappe.connect()
+#         field = {
+#         "doc": "Dashboard Chart",
+#         "after_field": "has_variants",
+#         "field_details": {
+#             "field_name": "commission_value",
+#             "field_type": "Float",
+#             "label": "Commision Value"
+#         }}
+
+#         add_custom_field(
+#                     doc=field["doc"],
+#                     after_field=field["after_field"],
+#                     field_details=field["field_details"],
+#                     section=field.get("section"),
+#                 )
+       
+#     except Exception as e:
+#         click.echo(f"Error: {str(e)}")
+#     finally:
+#         frappe.destroy()
+
 commands = [
-    create_workspace_command
+    create_workspace_command,
+    create_column,
+    add_commsion_on_item
 ]

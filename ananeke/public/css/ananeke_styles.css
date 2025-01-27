@@ -29,6 +29,7 @@ svg.es-icon.icon-sm {
 
 .widget.shortcut-widget-box{
     background-color: #dfc8e2 !important;
+    color: rgb(193, 179, 179) !important;
     padding: 1.2rem;
     display: flex;
     justify-content: center;
