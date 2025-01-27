@@ -62,7 +62,6 @@ doctype_list_js = {"Sales Invoice" : "public/js/sales_invoice_list.js",
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 doctype_calendar_js = {"ToDo" : "public/js/todo_calendar.js"}
 
-
 # Svg Icons
 # ------------------
 # include app icons in desk
