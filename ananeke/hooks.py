@@ -51,6 +51,7 @@ page_js = {"page" : "public/js/custom.js"}
 doctype_js = {"Sales Order" : "public/js/sales_order.js",
               "SMS Center": "public/js/sms_center.js",
               "Customer": "public/js/customer.js",
+              "Stock Entry": "public/js/stock_entry.js",
               "ToDo": "public/js/todo.js"}
 
 doctype_list_js = {"Sales Invoice" : "public/js/sales_invoice_list.js",
@@ -60,7 +61,9 @@ doctype_list_js = {"Sales Invoice" : "public/js/sales_invoice_list.js",
                    }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
-doctype_calendar_js = {"ToDo" : "public/js/todo_calendar.js"}
+
+doctype_calendar_js = {"Sales Order" : "public/js/sales_order_calendar.js",
+                       "ToDo" : "public/js/todo_calendar.js"}
 
 # Svg Icons
 # ------------------
@@ -152,8 +155,15 @@ before_uninstall = "ananeke.uninstall.before_uninstall"
 # Hook on document methods and events
 
 doc_events = {
+    "Stock Entry": {
+		"before_save": "ananeke.overrides.stock_entry.stock_entry",
+	},
 	"Sales Order": {
 		"on_submit": "ananeke.methods.sales_order.sales_order",
+	},
+    "Sales Invoice": {
+		"before_save": "ananeke.methods.sales_invoice.sales_invoice",
+		"on_submit": "ananeke.methods.sales_invoice.sales_invoice",
 	},
     "ToDo": {
 		"before_save": "ananeke.methods.todo.todo",

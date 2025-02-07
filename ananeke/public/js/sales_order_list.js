@@ -23,3 +23,8 @@
 //         cost_center_field.insertAfter(customer_field.$wrapper);
 //     },
 // };
+
+frappe.listview_settings['Sales Order'] = {
+    hide_name_column: true
+};
+
