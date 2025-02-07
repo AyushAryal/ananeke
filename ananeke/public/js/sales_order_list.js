@@ -25,6 +25,37 @@
 // };
 
 frappe.listview_settings['Sales Order'] = {
-    hide_name_column: true
+    hide_name_column: true,
+
+    onload: function(listview) {
+
+        console.log(listview.$result);
+        
+        // listview.$result.findAll('.list-row-container').each(function() {
+        //     let row = $(this);
+        //     let docname = row.attr("data-name");
+        //     console.log(row);
+
+
+        //     if (docname) {
+
+        //         frappe.db.get_value('Sales Order', docname, 'seen').then(r => {
+        //             if (r.message && r.message.seen !== undefined) {
+        //                 if (r.message.seen === 0 || r.message.seen === null) {
+        //                     row.css("background", "#ffebeb");  // Light red for unopened
+        //                 } else {
+        //                     row.css("background", "#e6ffe6");  // Light green for opened
+        //                 }
+        //             }
+        //         });
+        //     }
+        // });
+    }
 };
+
+
+
+
+
+
 
