@@ -143,6 +143,35 @@ def add_commsion_on_item():
         frappe.destroy()
 
 
+@click.command('add-cost-center-to-user')
+def add_cost_center_to_user():
+    try:
+        frappe.init(site="site.wallet")
+        frappe.connect()
+        field = {
+        "doc": "User",
+        "after_field": "email",
+        "field_details": {
+            "field_name": "cost_center",
+            "field_type": "Link",
+            "options": "Cost Center",
+            "reqd": 0,
+            "label": "Branch"
+        }}
+
+        add_custom_field(
+                    doc=field["doc"],
+                    after_field=field["after_field"],
+                    field_details=field["field_details"],
+                    section=field.get("section"),
+                )
+       
+    except Exception as e:
+        click.echo(f"Error: {str(e)}")
+    finally:
+        frappe.destroy()
+
+
 # @click.command('add-dashboard-calendar')
 # def add_dashboard_calendar():
 #     try:
@@ -172,5 +201,6 @@ def add_commsion_on_item():
 commands = [
     create_workspace_command,
     create_column,
-    add_commsion_on_item
+    add_commsion_on_item,
+    add_cost_center_to_user
 ]

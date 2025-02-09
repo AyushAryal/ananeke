@@ -51,6 +51,7 @@ page_js = {"page" : "public/js/custom.js"}
 doctype_js = {"Sales Order" : "public/js/sales_order.js",
               "SMS Center": "public/js/sms_center.js",
               "Customer": "public/js/customer.js",
+              "User": "public/js/user.js",
               "Stock Entry": "public/js/stock_entry.js",
               "ToDo": "public/js/todo.js"}
 
