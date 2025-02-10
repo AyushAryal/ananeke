@@ -49,6 +49,8 @@ page_js = {"page" : "public/js/custom.js"}
 
 # include js in doctype views
 doctype_js = {"Sales Order" : "public/js/sales_order.js",
+              "Sales Invoice" : "public/js/sales_invoice.js",
+              "Payment Entry" : "public/js/payment_entry.js",
               "SMS Center": "public/js/sms_center.js",
               "Customer": "public/js/customer.js",
               "User": "public/js/user.js",

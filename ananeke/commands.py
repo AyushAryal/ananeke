@@ -116,6 +116,29 @@ def create_column():
         frappe.destroy()
 
 
+@click.command('create-next-service-column')
+def create_column():
+    try:
+        frappe.init(site="site.wallet")
+        frappe.connect()
+        field_definition = {
+        "fieldname": "next_service",
+        "label": "Next Service",
+        "fieldtype": "Date",
+        "insert_after": "description",
+        "read_only": 0,
+        "in_list_view": 1,
+        "mandatory": 0,
+    }
+        create_custom_field("Sales Order Item", field_definition)
+        create_custom_field("Sales Invoice Item", field_definition)
+       
+    except Exception as e:
+        click.echo(f"Error: {str(e)}")
+    finally:
+        frappe.destroy()
+
+
 @click.command('add-commision-on-item')
 def add_commsion_on_item():
     try:

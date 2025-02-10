@@ -5,10 +5,12 @@ frappe.ui.form.on("User", {
             args: {
                 doctype: "User",
                 filters: { name: frappe.session.user },
-                fieldname: "roles"
+                fieldname: ["roles", "email"]
             },
             callback: function (response) {
                 let roles = response.message.roles || [];
+                console.log(response.message.roles.includes("Frontdesk"));
+
                 if (!roles.includes("Frontdesk")) {
                     frm.set_df_property('cost_center', 'hidden', 1);
                 } else {
