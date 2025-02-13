@@ -194,6 +194,34 @@ def add_cost_center_to_user():
     finally:
         frappe.destroy()
 
+@click.command('add-commission-account-field')
+def add_commission_account_field():
+    try:
+        frappe.init(site="site.wallet")
+        frappe.connect()
+        field = {
+        "doc": "Selling Settings",
+        "after_field": "territory",
+        "field_details": {
+            "field_name": "commission_account",
+            "field_type": "Link",
+            "options": "Account",
+            "reqd": 0,
+            "label": "Commission Account"
+        }}
+
+        add_custom_field(
+                    doc=field["doc"],
+                    after_field=field["after_field"],
+                    field_details=field["field_details"],
+                    section=field.get("section"),
+                )
+       
+    except Exception as e:
+        click.echo(f"Error: {str(e)}")
+    finally:
+        frappe.destroy()
+
 
 # @click.command('add-dashboard-calendar')
 # def add_dashboard_calendar():
@@ -225,5 +253,6 @@ commands = [
     create_workspace_command,
     create_column,
     add_commsion_on_item,
-    add_cost_center_to_user
+    add_cost_center_to_user,
+    add_commission_account_field
 ]

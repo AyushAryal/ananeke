@@ -150,7 +150,7 @@ before_uninstall = "ananeke.uninstall.before_uninstall"
 # Override standard doctype classes
 
 # override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
+# 	"Sales Invoice": "ananeke.overrides.sales_invoice.CustomSalesInvoice"
 # }
 
 # Document Events
@@ -166,7 +166,7 @@ doc_events = {
 	},
     "Sales Invoice": {
 		# "before_save": "ananeke.methods.sales_invoice.sales_invoice",
-		# "on_submit": "ananeke.methods.sales_invoice.sales_invoice",
+		"on_submit": "ananeke.methods.sales_invoice.sales_invoice",
 	},
     "ToDo": {
 		"before_save": "ananeke.methods.todo.todo",
@@ -216,7 +216,8 @@ fixtures = [
 # }
 #
 override_whitelisted_methods = {
-    "frappe.desk.listview.get_list_view_fields": "ananeke.overrides.todo_override.custom_get_list_view_fields"
+    "frappe.desk.listview.get_list_view_fields": "ananeke.overrides.todo_override.custom_get_list_view_fields",
+    # "erpnext.accounts.doctype.sales_invoice.sales_invoice.SalesInvoice": "ananeke.overrides.sales_invoice.CustomSalesInvoice"
 }
 
 # each overriding function accepts a `data` argument;
