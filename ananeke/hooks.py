@@ -52,6 +52,7 @@ doctype_js = {"Sales Order" : "public/js/sales_order.js",
               "Sales Invoice" : "public/js/sales_invoice.js",
               "Payment Entry" : "public/js/payment_entry.js",
               "SMS Center": "public/js/sms_center.js",
+              "Employee": "public/js/employee.js",
               "Customer": "public/js/customer.js",
               "User": "public/js/user.js",
               "Stock Entry": "public/js/stock_entry.js",
@@ -165,7 +166,7 @@ doc_events = {
 		"on_submit": "ananeke.methods.sales_order.sales_order",
 	},
     "Sales Invoice": {
-		# "before_save": "ananeke.methods.sales_invoice.sales_invoice",
+		"on_cancel": "ananeke.methods.sales_invoice.sales_invoice",
 		"on_submit": "ananeke.methods.sales_invoice.sales_invoice",
 	},
     "ToDo": {
