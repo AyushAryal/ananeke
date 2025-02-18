@@ -49,11 +49,10 @@ def sales_invoice(doc, method):
     
 
 def create_commission_journal_entry(doc, total_commission, commission_expense_account, commission_payable_account, employee_commissions):
-    """Creates a journal entry to record commission expenses and payables"""
     accounts = [
         {
             "account": commission_expense_account,
-            "debit_in_account_currency": total_commission,  # Debit the commission expense
+            "debit_in_account_currency": total_commission,
             "credit_in_account_currency": 0,
         }
     ]
@@ -64,7 +63,7 @@ def create_commission_journal_entry(doc, total_commission, commission_expense_ac
         accounts.append(
             {
                 "account": commission_payable_account,
-                "debit_in_account_currency": 0,  # Credit payables to employees
+                "debit_in_account_currency": 0,
                 "credit_in_account_currency": commission_amount,
                 "party_type": "Employee",
                 "party": employee,
@@ -89,12 +88,10 @@ def create_commission_journal_entry(doc, total_commission, commission_expense_ac
     journal_entry.insert()
     journal_entry.submit()
 
-    # Store Journal Entry reference in Sales Invoice for later reversal
     doc.db_set("commission_journal_entry", journal_entry.name)
 
 
 def reverse_commission_journal_entry(doc, commission_account, commission_payable_account):
-    """Creates a reversal journal entry to nullify the commission transactions when invoice is canceled"""
     if not doc.commission_journal_entry:
         frappe.throw(f"No commission journal entry found for Sales Invoice {doc.name}")
 

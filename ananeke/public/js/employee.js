@@ -4,13 +4,12 @@ frappe.ui.form.on('Employee', {
 
         if (commissionBlock.length === 0) {
             commissionBlock = `
-            <div class="commission-block">
-                <h3>Employee Commission</h3>
-                <p>Commission Accumulated: <strong id="commission-balance">Loading...</strong></p>
+            <div style="display: flex; justify-content: center; align-items: center; padding-top: 10px; padding-bottom: 10px;" class="commission-block">
+                <p><h5>Accumulated Commission</h5> Rs.<strong id="commission-balance">Loading...</strong></p>
             </div>
             `;
             
-            $(frm.wrapper).find('.layout-main-section').prepend(commissionBlock);
+            $(frm.wrapper).find('.form-assignments').prepend(commissionBlock);
         }
 
         frappe.call({

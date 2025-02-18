@@ -12,7 +12,7 @@ def employee_accumulated_commission(employee_id):
     if not commission_payable_account:
         return {"message": "Commission Payable account not configured."}
     
-    bal = get_balance_on(
+    balance = get_balance_on(
         account=commission_payable_account,
         party_type="Employee",
         party=employee.name,
@@ -21,5 +21,5 @@ def employee_accumulated_commission(employee_id):
     return {
         "employee_id": employee_id,
         "employee_name": employee.employee_name,
-        "accumulated_commission": -bal
+        "accumulated_commission": -balance
     }
