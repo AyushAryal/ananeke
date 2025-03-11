@@ -4,7 +4,7 @@ import frappe
 
 def sales_invoice(doc, method):
     selling_settings = frappe.get_single("Selling Settings")
-    commission_expense_account = selling_settings.commission_account
+    commission_expense_account = selling_settings.commission_expense_account
     commission_payable_account = selling_settings.commission_payable_account
 
     if method == "on_submit":

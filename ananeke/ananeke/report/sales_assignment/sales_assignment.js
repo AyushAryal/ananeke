@@ -5,7 +5,7 @@ frappe.query_reports["Sales Assignment"] = {
 	"filters": [
 		{
             "fieldname": "assign_to",
-            "label": __("Assigned To"),
+            "label": __("Sales Person"),
             "fieldtype": "Link",
             "options": "Employee"
         },

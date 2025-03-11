@@ -4,16 +4,16 @@ def execute(filters=None):
     filters = filters or {}
 
     columns = [
-        {"label": "Assigned To", "fieldname": "assign_to", "fieldtype": "Link", "options": "Employee", "width": 150},
+        {"label": "Sales Person", "fieldname": "assign_to", "fieldtype": "Link", "options": "Employee", "width": 150},
         {"label": "Employee Name", "fieldname": "employee_name", "fieldtype": "Data", "width": 150},
-        {"label": "Customer", "fieldname": "customer", "fieldtype": "Link", "options": "Customer", "width": 150},
         {"label": "Item", "fieldname": "item_name", "fieldtype": "Data", "width": 200},
         {"label": "Quantity", "fieldname": "qty", "fieldtype": "Float", "width": 100},
         {"label": "Amount", "fieldname": "amount", "fieldtype": "Currency", "width": 120},
         {"label": "Sales Invoice", "fieldname": "sales_invoice", "fieldtype": "Link", "options": "Sales Invoice", "width": 150},
         {"label": "Invoice Date", "fieldname": "posting_date", "fieldtype": "Date", "width": 120},
+        {"label": "Customer", "fieldname": "customer", "fieldtype": "Link", "options": "Customer", "width": 150},
         {"label": "Status", "fieldname": "status", "fieldtype": "Data", "width": 120},
-        {"label": "Company", "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 150},
+        # {"label": "Company", "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 150},
     ]
 
     conditions = []
