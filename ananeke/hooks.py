@@ -28,7 +28,9 @@ website_route_rules = [
 ]
 # include js, css files in header of desk.html
 app_include_css = "/assets/ananeke/css/ananeke_styles.css"
-app_include_js = "/assets/ananeke/js/notification.js"
+app_include_js = ["/assets/ananeke/js/notification.js",
+                  "/assets/ananeke/js/pos.js",
+                  ]
 # app_include_js = "/assets/ananeke/js/ananeke.js"
 
 # include js, css files in header of web template
@@ -44,8 +46,8 @@ app_include_js = "/assets/ananeke/js/notification.js"
 
 # include js in page
 # page_js = {"page" : "public/js/file.js"}
-page_js = {"page" : "public/js/custom.js"}
-
+# page_js = {"page" : "public/js/custom.js",
+#            "point-of-sale": "public/js/pos.js"}
 
 # include js in doctype views
 doctype_js = {"Sales Order" : "public/js/sales_order.js",
@@ -198,16 +200,16 @@ doc_events = {
 
 # Testing
 # -------
-fixtures = [
-    {
-        "dt": "Role",
-        "filters": [["name", "=", "Frontdesk"]]
-    },
-    {
-        "dt": "Custom DocPerm",
-        "filters": [["role", "=", "Frontdesk"]]
-    }
-]
+# fixtures = [
+#     {
+#         "dt": "Role",
+#         "filters": [["name", "=", "Frontdesk"]]
+#     },
+#     {
+#         "dt": "Custom DocPerm",
+#         "filters": [["role", "=", "Frontdesk"]]
+#     }
+# ]
 # before_tests = "ananeke.install.before_tests"
 
 # Overriding Methods
