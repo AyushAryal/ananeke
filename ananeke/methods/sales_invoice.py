@@ -93,7 +93,7 @@ def create_commission_journal_entry(doc, total_commission, commission_expense_ac
 
 def reverse_commission_journal_entry(doc, commission_account, commission_payable_account):
     if not doc.commission_journal_entry:
-        frappe.throw(f"No commission journal entry found for Sales Invoice {doc.name}")
+        return
 
     original_journal_entry = frappe.get_doc("Journal Entry", doc.commission_journal_entry)
 
