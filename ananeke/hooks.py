@@ -168,9 +168,9 @@ doc_events = {
 		"on_submit": "ananeke.methods.sales_order.sales_order",
 	},
     "Sales Invoice": {
-		"on_cancel": "ananeke.methods.sales_invoice.sales_invoice",
+		# "on_cancel": "ananeke.methods.sales_invoice.sales_invoice",
 		# "on_submit": "ananeke.methods.sales_invoice.sales_invoice",
-		"before_save": "ananeke.methods.sales_invoice.sales_invoice",
+		# "before_save": "ananeke.methods.sales_invoice.sales_invoice",
 	},
     "ToDo": {
 		"before_save": "ananeke.methods.todo.todo",
