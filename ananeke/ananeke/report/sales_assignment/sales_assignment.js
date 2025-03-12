@@ -34,6 +34,27 @@ frappe.query_reports["Sales Assignment"] = {
             "options": "Customer"
         },
         {
+            "fieldname": "status",
+            "label": __("Status"),
+            "fieldtype": "MultiSelectList",
+            "options": [
+                "Draft",
+                "Return",
+                "Credit Note Issued",
+                "Submitted",
+                "Paid",
+                "Partly Paid",
+                "Unpaid",
+                "Unpaid and Discounted",
+                "Partly Paid and Discounted",
+                "Overdue and Discounted",
+                "Overdue",
+                "Cancelled",
+                "Internal Transfer"
+            ],
+            "default": ["Paid"]
+        },        
+        {
             "fieldname": "frequency",
             "label": __("Frequency"),
             "fieldtype": "Select",
@@ -49,16 +70,14 @@ frappe.query_reports["Sales Assignment"] = {
             }
         }
 	],
-
 	"frequency": function(report) {
+        console.log(report);
         update_date_range();
     }
 };
 
-function update_date_range() {
-	console.log("yaad");
-    // var frequency = frappe.query_reports.filters_dict.frequency.get_value();
-	console.log(frappe.query_report)
+function update_date_range() { set_value(today);
+    var frequency = frappe.query_report.filters.find(obj => obj.fieldname === "frequency").value;
     var today = frappe.datetime.nowdate();
     var from_date = "";
 
@@ -72,7 +91,15 @@ function update_date_range() {
         from_date = frappe.datetime.add_days(today, -365);
     }
 
-    frappe.query_report.filters_dict.from_date.set_value(from_date);
-    frappe.query_report.filters_dict.to_date.set_value(today);
+    var fromDateFilter = frappe.query_report.get_filter("from_date");
+    var toDateFilter = frappe.query_report.get_filter("to_date");
+
+    if (fromDateFilter) {
+        fromDateFilter.set_value(from_date);
+    }
+    if (toDateFilter) {
+        toDateFilter.set_value(today);
+    }
+
     frappe.query_report.refresh();
 }

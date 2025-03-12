@@ -1,7 +1,7 @@
 ## Ananeke
 
-Ananeke modifications
 
-#### License
+Commission Accounts
 
-mit
+-> Expense acccount -> Expense Account type
+-> Payable account -> Payable Account Type
