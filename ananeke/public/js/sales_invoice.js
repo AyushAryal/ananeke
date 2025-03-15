@@ -1,4 +1,20 @@
 frappe.ui.form.on("Sales Invoice", {
+
+    cost_center: function (frm) {
+        if (frm.doc.cost_center) {
+            frm.doc.items.forEach((item) => {
+                    frappe.model.set_value(
+                        item.doctype,
+                        item.name,
+                        "cost_center",
+                        frm.doc.cost_center
+                    );
+                }
+            );       
+            frm.refresh_field("items");
+        }
+    },
+
     onload: function (frm) {
         frappe.call({
             method: "frappe.client.get_value",
