@@ -52,8 +52,8 @@ frappe.query_reports["Sales Assignment"] = {
                 "Cancelled",
                 "Internal Transfer"
             ],
-            "default": ["Paid"]
-        },        
+            "default": ["Paid",]
+        },     
         {
             "fieldname": "frequency",
             "label": __("Frequency"),

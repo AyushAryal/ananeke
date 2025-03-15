@@ -8,6 +8,7 @@ def execute(filters=None):
         # {"label": "Sales Person", "fieldname": "assign_to", "fieldtype": "Link", "options": "Employee", "width": 150},
         {"label": "Employee Name", "fieldname": "employee_name", "fieldtype": "Data", "width": 150},
         {"label": "Item", "fieldname": "item_name", "fieldtype": "Data", "width": 200},
+        {"label": "Nature", "fieldname": "item_group", "fieldtype": "Data", "width": 200},
         # {"label": "Quantity", "fieldname": "qty", "fieldtype": "Float", "width": 100},
         {"label": "Amount", "fieldname": "amount", "fieldtype": "Currency", "width": 120},
         {"label": "Sales Invoice", "fieldname": "sales_invoice", "fieldtype": "Link", "options": "Sales Invoice", "width": 150},
@@ -49,7 +50,7 @@ def execute(filters=None):
     query = f"""
         SELECT 
             si_item.assign_to, emp.employee_name, si.name AS sales_invoice, 
-            si.customer, si_item.item_name, si_item.qty, 
+            si.customer, si_item.item_name, si_item.item_group, si_item.qty, 
             si_item.amount, si.posting_date, si.company, si.status, 
             item.commission_value  -- Get commission_value from the Item table
         FROM `tabSales Invoice Item` si_item
