@@ -5,16 +5,16 @@ def execute(filters=None):
     filters = filters or {}
 
     columns = [
-        {"label": "Sales Person", "fieldname": "assign_to", "fieldtype": "Link", "options": "Employee", "width": 150},
+        # {"label": "Sales Person", "fieldname": "assign_to", "fieldtype": "Link", "options": "Employee", "width": 150},
         {"label": "Employee Name", "fieldname": "employee_name", "fieldtype": "Data", "width": 150},
         {"label": "Item", "fieldname": "item_name", "fieldtype": "Data", "width": 200},
-        {"label": "Quantity", "fieldname": "qty", "fieldtype": "Float", "width": 100},
+        # {"label": "Quantity", "fieldname": "qty", "fieldtype": "Float", "width": 100},
         {"label": "Amount", "fieldname": "amount", "fieldtype": "Currency", "width": 120},
         {"label": "Sales Invoice", "fieldname": "sales_invoice", "fieldtype": "Link", "options": "Sales Invoice", "width": 150},
         {"label": "Invoice Date", "fieldname": "posting_date", "fieldtype": "Date", "width": 120},
         {"label": "Customer", "fieldname": "customer", "fieldtype": "Link", "options": "Customer", "width": 150},
         {"label": "Status", "fieldname": "status", "fieldtype": "Data", "width": 120},
-        # {"label": "Company", "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 150},
+        # {"label": "Commission", "fieldname": "commission_value", "fieldtype": "Percent", "width": 100}
     ]
 
     conditions = []
@@ -50,10 +50,12 @@ def execute(filters=None):
         SELECT 
             si_item.assign_to, emp.employee_name, si.name AS sales_invoice, 
             si.customer, si_item.item_name, si_item.qty, 
-            si_item.amount, si.posting_date, si.company, si.status
+            si_item.amount, si.posting_date, si.company, si.status, 
+            item.commission_value  -- Get commission_value from the Item table
         FROM `tabSales Invoice Item` si_item
         JOIN `tabSales Invoice` si ON si.name = si_item.parent
         LEFT JOIN `tabEmployee` emp ON emp.name = si_item.assign_to
+        LEFT JOIN `tabItem` item ON item.name = si_item.item_code  -- Join with the Item table to get commission_value
         WHERE {conditions_sql}
         ORDER BY si.posting_date DESC, si_item.assign_to ASC
     """
@@ -63,14 +65,16 @@ def execute(filters=None):
     employee_sales = {}
     for row in data:
         if row["assign_to"] not in employee_sales:
-            employee_sales[row["assign_to"]] = {"employee_name": row["employee_name"], "total_amount": 0}
+            employee_sales[row["assign_to"]] = {"employee_name": row["employee_name"], "total_amount": 0, "total_commission": 0}
         
         employee_sales[row["assign_to"]]["total_amount"] += row["amount"]
+        employee_sales[row["assign_to"]]["total_commission"] += row["commission_value"]
 
     sorted_employees = sorted(employee_sales.items(), key=lambda x: x[1]["total_amount"], reverse=True)
 
     total_amount = sum(row["amount"] for row in data if row["amount"])
     total_qty = sum(row["qty"] for row in data if row["qty"])
+    total_commission = sum(row["commission_value"] for row in data if row["commission_value"])
 
     total_row = {
         "assign_to": "",
@@ -79,6 +83,7 @@ def execute(filters=None):
         "item_name": "Total",
         "qty": total_qty,
         "amount": total_amount,
+        "commission_value": total_commission,  # Add total commission to the total row
         "status": "",
     }
 
