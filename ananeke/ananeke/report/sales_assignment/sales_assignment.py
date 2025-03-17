@@ -25,16 +25,16 @@ def execute(filters=None):
 
     role_docs = frappe.get_all("Has Role",fields=["name","role"], filters={"parent":user_doc.name})
 
+    if filters.get("assign_to"):
+        conditions.append("si_item.assign_to = %(assign_to)s")
+        values["assign_to"] = filters["assign_to"]
+
     if "Employee" in [role_doc.role for role_doc in role_docs]:
         employee = frappe.get_doc("Employee", {"user_id":user_doc.email})
 
         if employee:
             conditions.append("si_item.assign_to = %(employee_name)s")
             values["employee_name"] = employee.name
-
-    if filters.get("assign_to"):
-        conditions.append("si_item.assign_to = %(assign_to)s")
-        values["assign_to"] = filters["assign_to"]
 
     if filters.get("from_date"):
         conditions.append("si.posting_date >= %(from_date)s")
