@@ -5,17 +5,37 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "section_break_jnqg"
+  "month",
+  "employee",
+  "table_tkok"
  ],
  "fields": [
   {
-   "fieldname": "section_break_jnqg",
-   "fieldtype": "Section Break"
+   "fieldname": "month",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Month",
+   "options": "JAN\nFEB\nMAR\nAPR\nMAY\nJUN\nJUL\nAUG\nSEP\nOCT\nNOV\nDEC",
+   "reqd": 1
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fieldname": "table_tkok",
+   "fieldtype": "Table",
+   "label": "Target Tasks",
+   "options": "Target"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-04 11:31:17.174342",
+ "modified": "2025-03-17 10:47:04.897138",
  "modified_by": "Administrator",
  "module": "Ananeke",
  "name": "Employee Target",
