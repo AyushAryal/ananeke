@@ -9,21 +9,24 @@
   "employee",
   "target",
   "achieved",
-  "status"
+  "progress"
  ],
  "fields": [
   {
    "fieldname": "month",
-   "fieldtype": "Select",
+   "fieldtype": "Date",
+   "in_filter": 1,
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Month",
-   "options": "JAN\nFEB\nMAR\nAPR\nMAY\nJUN\nJUL\nAUG\nSEP\nOCT\nNOV\nDEC",
    "reqd": 1
   },
   {
    "fieldname": "employee",
    "fieldtype": "Link",
+   "in_filter": 1,
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Employee",
    "options": "Employee",
    "reqd": 1
@@ -31,25 +34,35 @@
   {
    "fieldname": "target",
    "fieldtype": "Float",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Target",
    "non_negative": 1,
    "reqd": 1
   },
   {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "label": "Status",
-   "options": "Completed\nIncomplete\nOn Going"
-  },
-  {
    "fieldname": "achieved",
    "fieldtype": "Float",
-   "label": "Achived"
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Achieved",
+   "read_only": 1
+  },
+  {
+   "fieldname": "progress",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "is_virtual": 1,
+   "label": "Progress",
+   "precision": "2",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-17 11:35:25.026102",
+ "modified": "2025-03-17 12:23:18.805936",
  "modified_by": "Administrator",
  "module": "Ananeke",
  "name": "Employee Target",

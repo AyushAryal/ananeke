@@ -1,6 +1,38 @@
 import json
 import frappe
 
+from frappe.utils import getdate, nowdate
+def sales_invoice(doc, method):
+    invoice_date = getdate(doc.posting_date)
+    invoice_month = invoice_date.strftime("%Y-%m")
+    
+    for item in doc.items:
+        assigned_employee = item.get("assign_to")
+        if not assigned_employee:
+            continue
+        
+        # Find the Employee Target for the corresponding month
+        employee_target = frappe.db.get_value(
+            "Employee Target",
+            {
+                "employee": assigned_employee,
+                "month": ("between", [invoice_date.replace(day=1), invoice_date.replace(day=28)])
+            },
+            "name"
+        )
+        
+        if employee_target:
+            target_doc = frappe.get_doc("Employee Target", employee_target)
+            
+            # Increase achieved amount on submit, decrease on cancel
+            if method == "on_submit":
+                target_doc.achieved += item.amount
+            elif method == "on_cancel":
+                target_doc.achieved -= item.amount
+
+            target_doc.save()
+            frappe.db.commit()
+
 
 # def sales_invoice(doc, method):
 #     selling_settings = frappe.get_single("Selling Settings")
