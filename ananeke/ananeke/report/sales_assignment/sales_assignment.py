@@ -30,9 +30,7 @@ def execute(filters=None):
         values["assign_to"] = filters["assign_to"]
 
     if "Employee" in [role_doc.role for role_doc in role_docs]:
-        employee = frappe.get_doc("Employee", {"user_id":user_doc.email})
         employee = frappe.get_value("Employee", {"user_id": user}, "name")
-
 
         if employee:
             conditions.append("si_item.assign_to = %(employee_name)s")
