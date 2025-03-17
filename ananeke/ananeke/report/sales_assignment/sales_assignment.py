@@ -34,8 +34,6 @@ def execute(filters=None):
 
         if employee:
             conditions.append("si_item.assign_to = %(employee_name)s")
-            frappe.throw(str(conditions))
-
             values["employee_name"] = employee.name
 
     if filters.get("from_date"):
