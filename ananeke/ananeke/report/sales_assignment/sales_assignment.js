@@ -33,6 +33,13 @@ frappe.query_reports["Sales Assignment"] = {
             "fieldtype": "Link",
             "options": "Customer"
         },
+
+        {
+            "fieldname": "cost_center",
+            "label": __("Branch"),
+            "fieldtype": "Link",
+            "options": "Cost Center"
+        },
         {
             "fieldname": "status",
             "label": __("Status"),

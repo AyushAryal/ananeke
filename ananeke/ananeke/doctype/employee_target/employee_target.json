@@ -7,7 +7,9 @@
  "field_order": [
   "month",
   "employee",
-  "table_tkok"
+  "target",
+  "achieved",
+  "status"
  ],
  "fields": [
   {
@@ -27,15 +29,27 @@
    "reqd": 1
   },
   {
-   "fieldname": "table_tkok",
-   "fieldtype": "Table",
-   "label": "Target Tasks",
-   "options": "Target"
+   "fieldname": "target",
+   "fieldtype": "Float",
+   "label": "Target",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Completed\nIncomplete\nOn Going"
+  },
+  {
+   "fieldname": "achieved",
+   "fieldtype": "Float",
+   "label": "Achived"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-17 10:47:04.897138",
+ "modified": "2025-03-17 11:35:25.026102",
  "modified_by": "Administrator",
  "module": "Ananeke",
  "name": "Employee Target",
