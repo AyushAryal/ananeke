@@ -25,6 +25,8 @@ def execute(filters=None):
 
     role_docs = frappe.get_all("Has Role",fields=["name","role"], filters={"parent":user_doc.name})
 
+    frappe.throw(str([role_doc.role for role_doc in role_docs]))
+
     if filters.get("assign_to"):
         conditions.append("si_item.assign_to = %(assign_to)s")
         values["assign_to"] = filters["assign_to"]
