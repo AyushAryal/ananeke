@@ -31,10 +31,11 @@ def execute(filters=None):
 
     if "Employee" in [role_doc.role for role_doc in role_docs]:
         employee = frappe.get_doc("Employee", {"user_id":user_doc.email})
-        frappe.throw(str(employee.name))
 
         if employee:
             conditions.append("si_item.assign_to = %(employee_name)s")
+            frappe.throw(str(conditions))
+
             values["employee_name"] = employee.name
 
     if filters.get("from_date"):
