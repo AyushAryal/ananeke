@@ -5,22 +5,15 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "month",
   "employee",
   "target",
   "achieved",
+  "column_break_nlpr",
+  "from",
+  "to",
   "progress"
  ],
  "fields": [
-  {
-   "fieldname": "month",
-   "fieldtype": "Date",
-   "in_filter": 1,
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Month",
-   "reqd": 1
-  },
   {
    "fieldname": "employee",
    "fieldtype": "Link",
@@ -54,15 +47,36 @@
    "fieldtype": "Percent",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "is_virtual": 1,
    "label": "Progress",
    "precision": "2",
    "read_only": 1
+  },
+  {
+   "fieldname": "column_break_nlpr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "from",
+   "fieldtype": "Date",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "From",
+   "reqd": 1
+  },
+  {
+   "fieldname": "to",
+   "fieldtype": "Date",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "To",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-17 12:23:18.805936",
+ "modified": "2025-03-17 13:29:46.657430",
  "modified_by": "Administrator",
  "module": "Ananeke",
  "name": "Employee Target",
