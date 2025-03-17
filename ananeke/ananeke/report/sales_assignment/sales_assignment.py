@@ -37,7 +37,7 @@ def execute(filters=None):
         conditions.append("si.customer = %(customer)s")
         values["customer"] = filters["customer"]
 
-    if filters.get("branch"):
+    if filters.get("cost_center"):
         conditions.append("si.cost_center = %(cost_center)s")
         values["cost_center"] = filters["cost_center"]
 
