@@ -3,6 +3,8 @@ from frappe import _
 
 def execute(filters=None):
     filters = filters or {}
+    user = frappe.session.user
+    user_doc = frappe.get_doc(doctype="User", name=user, fields=[""])
 
     columns = [
         # {"label": "Sales Person", "fieldname": "assign_to", "fieldtype": "Link", "options": "Employee", "width": 150},
@@ -20,6 +22,15 @@ def execute(filters=None):
 
     conditions = []
     values = {}
+
+    role_docs = frappe.get_all("Has Role",fields=["name","role"], filters={"parent":user_doc.name})
+
+    if "Employee" in [role_doc.role for role_doc in role_docs]:
+        employee = frappe.get_doc("Employee", {"user_id":user_doc.email})
+
+        if employee:
+            conditions.append("si_item.assign_to = %(employee_name)s")
+            values["employee_name"] = employee.name
 
     if filters.get("assign_to"):
         conditions.append("si_item.assign_to = %(assign_to)s")
