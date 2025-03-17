@@ -9,7 +9,7 @@
  "idx": 0,
  "is_standard": "Yes",
  "letterhead": null,
- "modified": "2025-03-14 11:25:02.686653",
+ "modified": "2025-03-17 11:14:39.086207",
  "modified_by": "Administrator",
  "module": "Ananeke",
  "name": "Sales Assignment",
@@ -24,6 +24,9 @@
   },
   {
    "role": "Accounts User"
+  },
+  {
+   "role": "Employee"
   }
  ],
  "timeout": 0

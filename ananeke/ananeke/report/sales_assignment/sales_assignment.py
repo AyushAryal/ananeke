@@ -37,9 +37,15 @@ def execute(filters=None):
         conditions.append("si.customer = %(customer)s")
         values["customer"] = filters["customer"]
 
+    if filters.get("branch"):
+        conditions.append("si.cost_center = %(cost_center)s")
+        values["cost_center"] = filters["cost_center"]
+
     if filters.get("status"):
         conditions.append("si.status IN %(status)s")
         values["status"] = filters["status"]
+
+        #remove this
 
     if filters.get("company"):
         conditions.append("si.company = %(company)s")
