@@ -7,6 +7,7 @@ frappe.ui.form.on("ToDo", {
         let formattedDate = "Not Set";
         let formattedTime = "Not Set";
         let customer_name = "Not Set";
+        let branch = "Not Set";
 
         if (service_datetime !== "Not Set") {
             let dateObj = new Date(service_datetime);
@@ -19,6 +20,7 @@ frappe.ui.form.on("ToDo", {
             frappe.model.with_doc(frm.doc.reference_type, frm.doc.reference_name, function() {
                 let sales_order_doc = frappe.get_doc(frm.doc.reference_type, frm.doc.reference_name);
                 customer_name = sales_order_doc.customer || "Not Set";
+                branch = sales_order_doc.cost_center || "Not Set";
                 updatePreview();
             });
         } else {
@@ -42,6 +44,7 @@ frappe.ui.form.on("ToDo", {
                     <div style="flex: 1; min-width: 200px;">
                         <p><strong>Assigned To:</strong> Loading...</p>
                         <p><strong>Customer:</strong> ${customer_name}</p>
+                        <p><strong>Branch:</strong> ${branch}</p>
                     </div>
                     <div style="flex: 1; min-width: 200px;">
                         <p><strong>Service Time:</strong> ${formattedTime}</p>
@@ -61,7 +64,7 @@ frappe.ui.form.on("ToDo", {
                             <div style="flex: 1; min-width: 200px;">
                                 <p><strong>Assigned To:</strong> <a href="#">${user_name}</a></p>
                                 <p><strong>Customer:</strong> ${customer_name}</p>
-
+                                <p><strong>Branch:</strong> ${branch}</p>
                             </div>
                             <div style="flex: 1; min-width: 200px;">
                                 <p><strong>Service Date:</strong> ${formattedDate}</p>
