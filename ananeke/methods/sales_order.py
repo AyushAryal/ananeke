@@ -8,11 +8,12 @@ def sales_order(doc, method):
             try:
                 if item.assign_to:
                     employee = frappe.get_doc("Employee", item.assign_to)
+                    customer = frappe.get_doc("Customer", doc.customer, fields=["name", "customer_name", "mobile_n0"])
 
                     try:
                         task = frappe.get_doc({
                             "doctype": "ToDo",
-                            "description": f"Task assigned for {item.item_name} for appointment {doc.name} with {doc.customer}",
+                            "description": f"{item.item_name} appointment with {customer.customer_name} at {doc.service_date_time} : ({doc.name})",
                             "status": "Open",
                             "allocated_to": employee.user_id,
                             "assigned_to": employee.user_id,
@@ -22,7 +23,7 @@ def sales_order(doc, method):
                         })
                         task.save() 
                         if task.name:
-                            notification_message = f"You have been assigned a task for {item.item_name} by {frappe.session.user}."
+                            notification_message = f"Task assigned:{item.item_name} by {frappe.session.user}."
 
                             try:
                                 notification = frappe.get_doc({

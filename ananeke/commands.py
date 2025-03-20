@@ -128,27 +128,27 @@ def create_column():
         frappe.destroy()
 
 
-# @click.command('create-next-service-column')
-# def create_column():
-#     try:
-#         frappe.init(site="site.local")
-#         frappe.connect()
-#         field_definition = {
-#         "fieldname": "next_service",
-#         "label": "Next Service",
-#         "fieldtype": "Date",
-#         "insert_after": "description",
-#         "read_only": 0,
-#         "in_list_view": 1,
-#         "mandatory": 0,
-#     }
-#         create_custom_field("Sales Order Item", field_definition)
-#         create_custom_field("Sales Invoice Item", field_definition)
+@click.command('create-next-service-column')
+def create_next_service_column():
+    try:
+        frappe.init(site="site.local")
+        frappe.connect()
+        field_definition = {
+        "fieldname": "next_service",
+        "label": "Next Service",
+        "fieldtype": "Date",
+        "insert_after": "description",
+        "read_only": 0,
+        "in_list_view": 1,
+        "mandatory": 0,
+    }
+        create_custom_field("Sales Order Item", field_definition)
+        create_custom_field("Sales Invoice Item", field_definition)
 
-#     except Exception as e:
-#         click.echo(f"Error: {str(e)}")
-#     finally:
-#         frappe.destroy()
+    except Exception as e:
+        click.echo(f"Error: {str(e)}")
+    finally:
+        frappe.destroy()
 
 
 @click.command("add-commission-on-item")
@@ -332,6 +332,7 @@ def add_commission_journal_entry_field():
 commands = [
     create_workspace_command,
     create_column,
+    create_next_service_column,
     add_commission_on_item,
     add_cost_center_to_user,
     add_commission_expense_account_field,
