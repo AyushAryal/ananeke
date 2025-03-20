@@ -1,0 +1,34 @@
+{
+ "add_total_row": 1,
+ "columns": [],
+ "creation": "2025-03-06 13:00:11.314254",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "letterhead": null,
+ "modified": "2025-03-17 16:45:05.564360",
+ "modified_by": "Administrator",
+ "module": "Ananeke",
+ "name": "Daily Sales Register",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Sales Invoice",
+ "reference_report": "",
+ "report_name": "Daily Sales Register",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "Accounts Manager"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Employee Self Service"
+  }
+ ],
+ "timeout": 0
+}
