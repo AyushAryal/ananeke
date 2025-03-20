@@ -671,10 +671,14 @@ def get_tax_accounts(
                 for item_code, tax_data in item_wise_tax_detail.items():
                     itemised_tax.setdefault(item_code, frappe._dict())
 
-                    tax_data = ItemWiseTaxDetail(**tax_data)
+                    if isinstance(tax_data, list):
+                        tax_rate, tax_amount = tax_data
+                    else:
+                        tax_rate = tax_data
+                        tax_amount = 0
 
-                    if charge_type == "Actual" and not tax_data.tax_rate:
-                        tax_data.tax_rate = "NA"
+                    if charge_type == "Actual" and not tax_rate:
+                        tax_rate = "NA"
 
                     item_net_amount = sum(
                         [
@@ -685,10 +689,7 @@ def get_tax_accounts(
 
                     for d in item_row_map.get(parent, {}).get(item_code, []):
                         item_tax_amount = (
-                            flt(
-                                (tax_data.tax_amount * d.base_net_amount)
-                                / item_net_amount
-                            )
+                            flt((tax_amount * d.base_net_amount) / item_net_amount)
                             if item_net_amount
                             else 0
                         )
@@ -706,7 +707,7 @@ def get_tax_accounts(
                             itemised_tax.setdefault(d.name, {})[description] = (
                                 frappe._dict(
                                     {
-                                        "tax_rate": tax_data.tax_rate,
+                                        "tax_rate": tax_rate,
                                         "tax_amount": tax_value,
                                         "is_other_charges": (
                                             0
