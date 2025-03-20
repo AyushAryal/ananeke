@@ -9,7 +9,6 @@ from frappe.utils.xlsxutils import handle_html
 from pypika import Order
 
 from erpnext.accounts.report.utils import get_query_columns, get_values_for_columns
-from erpnext.controllers.taxes_and_totals import ItemWiseTaxDetail
 from erpnext.selling.report.item_wise_sales_history.item_wise_sales_history import (
     get_customer_details,
 )
