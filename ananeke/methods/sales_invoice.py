@@ -34,13 +34,11 @@ def sales_invoice(doc, method):
                 target_doc.achieved = (target_doc.achieved or 0) - item.amount
                 target_doc.progress = (target_doc.achieved /target_doc.target)
 
+            frappe.db.set_value("Employee Target", employee_target, "achieved", target_doc.achieved)
+            target_doc.reload()
             target_doc.save()
             frappe.db.commit()
-
-            frappe.db.set_value("Employee Target", employee_target, "achieved", target_doc.achieved)
-            frappe.db.commit()
             target_doc.reload()
-            frappe.msgprint(str(target_doc.achieved))
 
 
 
