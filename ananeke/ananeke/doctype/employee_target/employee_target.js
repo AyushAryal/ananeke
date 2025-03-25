@@ -2,23 +2,23 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on("Employee Target", {
-    // before_save: function(frm) {
-    //     if (frm.doc.employee) {
-    //         frappe.call({
-    //             method: 'frappe.client.get',
-    //             args: {
-    //                 doctype: 'Employee',
-    //                 name: frm.doc.employee
-    //             },
-    //             callback: function(r) {
-    //                 if (r.message) {
-    //                     var full_name = r.message.employee_name;
-    //                     frm.set_value('employee_name', full_name);
-    //                 }
-    //             }
-    //         });
-    //     }
-    // },
+    before_save: function(frm) {
+        if (frm.doc.employee) {
+            frappe.call({
+                method: 'frappe.client.get',
+                args: {
+                    doctype: 'Employee',
+                    name: frm.doc.employee
+                },
+                callback: function(r) {
+                    if (r.message) {
+                        var full_name = r.message.employee_name;
+                        frm.set_value('employee_name', full_name);
+                    }
+                }
+            });
+        }
+    },
     refresh: function (frm) {
         compute_progress(frm);
     },
