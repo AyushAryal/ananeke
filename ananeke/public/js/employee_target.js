@@ -12,9 +12,9 @@ frappe.ui.form.on('Employee Target', {
 
 function compute_progress(frm) {
     if (frm.doc.target && frm.doc.achieved) {
-        console.log(frm.doc);
         frm.set_value('progress', (frm.doc.achieved / frm.doc.target) * 100);
     } else {
         frm.set_value('progress', 0);
     }
+    frm.save();
 }

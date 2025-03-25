@@ -3,7 +3,7 @@
 
 frappe.ui.form.on("Employee Target", {
     refresh: function(frm) {
-        // Your refresh logic here (if needed)
+        frappe.msgprint(frm.doc.status);
     },
     before_save: function(frm) {
         if (frm.doc.employee) {
@@ -16,7 +16,6 @@ frappe.ui.form.on("Employee Target", {
                 callback: function(r) {
                     if (r.message) {
                         var full_name = r.message.employee_name;
-                        console.log(typeof(full_name));
                         frm.set_value('employee_name', full_name);
                     }
                 }

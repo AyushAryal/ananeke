@@ -7,16 +7,16 @@ def execute(filters=None):
     user_doc = frappe.get_doc(doctype="User", name=user, fields=[""])
 
     columns = [
-        # {"label": "Sales Person", "fieldname": "assign_to", "fieldtype": "Link", "options": "Employee", "width": 150},
         {"label": "Employee Name", "fieldname": "employee_name", "fieldtype": "Data", "width": 150},
-        {"label": "Item", "fieldname": "item_name", "fieldtype": "Data", "width": 200},
-        {"label": "Nature", "fieldname": "item_group", "fieldtype": "Data", "width": 200},
-        # {"label": "Quantity", "fieldname": "qty", "fieldtype": "Float", "width": 100},
-        {"label": "Amount", "fieldname": "amount", "fieldtype": "Currency", "width": 120},
         {"label": "Sales Invoice", "fieldname": "sales_invoice", "fieldtype": "Link", "options": "Sales Invoice", "width": 150},
+        {"label": "Item", "fieldname": "item_name", "fieldtype": "Data", "width": 200},
+        {"label": "Amount", "fieldname": "amount", "fieldtype": "Currency", "width": 120},
+        {"label": "Status", "fieldname": "status", "fieldtype": "Data", "width": 80},
+        {"label": "Nature", "fieldname": "item_group", "fieldtype": "Data", "width": 150},
         {"label": "Invoice Date", "fieldname": "posting_date", "fieldtype": "Date", "width": 120},
         {"label": "Customer", "fieldname": "customer", "fieldtype": "Link", "options": "Customer", "width": 150},
-        {"label": "Status", "fieldname": "status", "fieldtype": "Data", "width": 120},
+        # {"label": "Sales Person", "fieldname": "assign_to", "fieldtype": "Link", "options": "Employee", "width": 150},
+        # {"label": "Quantity", "fieldname": "qty", "fieldtype": "Float", "width": 100},
         # {"label": "Commission", "fieldname": "commission_value", "fieldtype": "Percent", "width": 100}
     ]
 
