@@ -20,7 +20,7 @@ frappe.ui.form.on("Employee Target", {
         }
     },
     refresh: function (frm) {
-        compute_progress(frm);
+        // compute_progress(frm);
     },
     achieved: function (frm) {
         compute_progress(frm);
