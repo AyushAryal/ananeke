@@ -28,13 +28,15 @@ def sales_invoice(doc, method):
 
             if method == "on_submit":
                 target_doc.achieved = (target_doc.achieved or 0) + item.amount
-                target_doc.progress = (target_doc.achieved /target_doc.target)
+                target_doc.progress = ((target_doc.achieved ) /target_doc.target)
 
             elif method == "on_cancel":
                 target_doc.achieved = (target_doc.achieved or 0) - item.amount
-                target_doc.progress = (target_doc.achieved /target_doc.target)
+                target_doc.progress = ((target_doc.achieved )/target_doc.target)
 
             frappe.db.set_value("Employee Target", employee_target, "achieved", target_doc.achieved)
+            frappe.db.set_value("Employee Target", employee_target, "progress", target_doc.progress)
+
             target_doc.reload()
             target_doc.save()
             frappe.db.commit()

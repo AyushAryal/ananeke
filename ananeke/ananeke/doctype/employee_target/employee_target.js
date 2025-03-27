@@ -3,6 +3,10 @@
 
 frappe.ui.form.on("Employee Target", {
     before_save: function(frm) {
+        compute_progress(frm);
+        // console.log(frm.achieved);
+
+
         if (frm.doc.employee) {
             frappe.call({
                 method: 'frappe.client.get',
@@ -18,16 +22,16 @@ frappe.ui.form.on("Employee Target", {
                 }
             });
         }
-    },
-    refresh: function (frm) {
-        // compute_progress(frm);
-    },
-    achieved: function (frm) {
-        compute_progress(frm);
-    },
-    target: function (frm) {
-        compute_progress(frm);
     }
+    // refresh: function (frm) {
+    //     // compute_progress(frm);
+    // },
+    // achieved: function (frm) {
+    //     compute_progress(frm);
+    // },
+    // target: function (frm) {
+    //     compute_progress(frm);
+    // }
 });
 
 function compute_progress(frm) {
@@ -36,7 +40,6 @@ function compute_progress(frm) {
     } else {
         frm.set_value('progress', 0);
     }
-    frm.save();
 };
 
 
