@@ -52,6 +52,7 @@ app_include_js = ["/assets/ananeke/js/notification.js",
 # include js in doctype views
 doctype_js = {"Sales Order" : "public/js/sales_order.js",
               "Sales Invoice" : "public/js/sales_invoice.js",
+              "Sales Invoice Item": "public/js/sales_invoice.js",
               "Payment Entry" : "public/js/payment_entry.js",
               "SMS Center": "public/js/sms_center.js",
               "Employee": "public/js/employee.js",
