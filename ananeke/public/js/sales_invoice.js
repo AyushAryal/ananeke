@@ -1,5 +1,4 @@
 frappe.ui.form.on("Sales Invoice", {
-
     cost_center: function (frm) {
         if (frm.doc.cost_center) {
             frm.doc.items.forEach((item) => {
@@ -14,8 +13,24 @@ frappe.ui.form.on("Sales Invoice", {
             frm.refresh_field("items");
         }
     },
-
     onload: function (frm) {
+        frappe.call({
+            method: "frappe.client.get_value",
+            args: {
+                doctype: "User",
+                filters: { name: frappe.session.user },
+                fieldname: ["cost_center", "roles"]
+            },
+            callback: function (response) {
+                if (response) {
+                    console.log(response.message);
+                    let cost_center = response.message.cost_center;
+                    if (cost_center) {
+                        frm.set_value("cost_center", cost_center);
+                    }
+                }
+            }
+        });
         // frappe.call({
         //     method: "ananeke.methods.employee.check_employee_checked_in_today",
         //     callback: function(r) {
@@ -55,23 +70,6 @@ frappe.ui.form.on("Sales Invoice", {
 				},
 			};
 		});
-
-        frappe.call({
-            method: "frappe.client.get_value",
-            args: {
-                doctype: "User",
-                filters: { name: frappe.session.user },
-                fieldname: ["cost_center", "roles"]
-            },
-            callback: function (response) {
-                if (response) {
-                    let cost_center = response.message.cost_center;
-                    if (cost_center) {
-                        frm.set_value("cost_center", cost_center);
-                    }
-                }
-            }
-        });
     }
 });
 
