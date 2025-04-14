@@ -69,11 +69,11 @@ def execute(filters=None):
             si_item.assign_to, emp.employee_name, si.name AS sales_invoice, 
             si.customer, si_item.item_name, si_item.item_group, si_item.qty, 
             si_item.amount, si.posting_date, si.company, si.status, 
-            item.commission_value  -- Get commission_value from the Item table
+            IFNULL(item.commission_value, 0) AS commission_value
         FROM `tabSales Invoice Item` si_item
         JOIN `tabSales Invoice` si ON si.name = si_item.parent
         LEFT JOIN `tabEmployee` emp ON emp.name = si_item.assign_to
-        LEFT JOIN `tabItem` item ON item.name = si_item.item_code  -- Join with the Item table to get commission_value
+        LEFT JOIN `tabItem` item ON item.name = si_item.item_code
         WHERE {conditions_sql}
         ORDER BY si.posting_date DESC, si_item.assign_to ASC
     """
@@ -83,17 +83,24 @@ def execute(filters=None):
     employee_sales = {}
     for row in data:
         if row["assign_to"] not in employee_sales:
-            employee_sales[row["assign_to"]] = {"employee_name": row["employee_name"], "total_amount": 0, "total_commission": 0}
-        
-        employee_sales[row["assign_to"]]["total_amount"] += row["amount"]
-        employee_sales[row["assign_to"]]["total_commission"] += row["commission_value"]
+            employee_sales[row["assign_to"]] = {
+                "employee_name": row["employee_name"],
+                "total_amount": 0.0,
+                "total_commission": 0.0
+            }
 
+        employee_sales[row["assign_to"]]["total_amount"] += row["amount"] or 0
+        employee_sales[row["assign_to"]]["total_commission"] += row["commission_value"] or 0
+
+    # Optional: sort employees by total amount
     sorted_employees = sorted(employee_sales.items(), key=lambda x: x[1]["total_amount"], reverse=True)
 
-    total_amount = sum(row["amount"] for row in data if row["amount"])
-    total_qty = sum(row["qty"] for row in data if row["qty"])
-    total_commission = sum(row["commission_value"] for row in data if row["commission_value"])
+    # Calculate overall totals
+    total_amount = sum(row["amount"] or 0 for row in data)
+    total_qty = sum(row["qty"] or 0 for row in data)
+    total_commission = sum(row["commission_value"] or 0 for row in data)
 
+    # Add total row at the end
     total_row = {
         "assign_to": "",
         "employee_name": "",
@@ -101,13 +108,14 @@ def execute(filters=None):
         "item_name": "Total",
         "qty": total_qty,
         "amount": total_amount,
-        "commission_value": total_commission,  # Add total commission to the total row
+        "commission_value": total_commission,
         "status": "",
     }
 
     data.append(total_row)
 
     return columns, data
+
 
 
 # import frappe
