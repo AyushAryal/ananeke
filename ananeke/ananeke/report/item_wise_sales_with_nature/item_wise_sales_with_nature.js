@@ -30,6 +30,12 @@ frappe.query_reports["Item Wise Sales with Nature"] = {
             options: "Employee",
         },
         {
+            fieldname: "cost_center",
+            label: __("Branch"),
+            fieldtype: "Link",
+            options: "Cost Center",
+        },
+        {
             fieldname: "company",
             label: __("Company"),
             fieldtype: "Link",

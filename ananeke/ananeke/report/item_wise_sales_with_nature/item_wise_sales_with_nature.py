@@ -399,6 +399,9 @@ def apply_conditions(query, si, sii, filters, additional_conditions=None):
     if filters.get("employee"):
         query = query.where(sii.assign_to == filters.get("employee"))
 
+    if filters.get("cost_center"):
+        query = query.where(si.cost_center == filters.get("cost_center"))
+
     parent_doc = frappe.qb.DocType("Sales Invoice")
     if filters.get("mode_of_payment"):
         sip_doc = frappe.qb.DocType("Sales Invoice Payment")
