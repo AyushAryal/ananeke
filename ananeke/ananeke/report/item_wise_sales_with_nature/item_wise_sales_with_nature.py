@@ -70,6 +70,7 @@ def _execute(filters=None, additional_table_columns=None, additional_conditions=
 
         row = {
             "item_code": d.item_code,
+            "assign_to": d.si_item_assign_to if d.si_item_assign_to else None,
             "item_name": d.si_item_name if d.si_item_name else d.i_item_name,
             "item_group": d.si_item_group if d.si_item_group else d.i_item_group,
             "description": d.description,
@@ -223,6 +224,13 @@ def get_columns(additional_table_columns, filters):
                 "label": _("Posting Date"),
                 "fieldname": "posting_date",
                 "fieldtype": "Date",
+                "width": 120,
+            },
+            {
+                "label": _("Employee"),
+                "fieldname": "assign_to",
+                "fieldtype": "Link",
+                "options": "Employee",
                 "width": 120,
             },
         ]
@@ -388,6 +396,9 @@ def apply_conditions(query, si, sii, filters, additional_conditions=None):
     if filters.get("to_date"):
         query = query.where(si.posting_date <= filters.get("to_date"))
 
+    if filters.get("employee"):
+        query = query.where(sii.assign_to == filters.get("employee"))
+
     parent_doc = frappe.qb.DocType("Sales Invoice")
     if filters.get("mode_of_payment"):
         sip_doc = frappe.qb.DocType("Sales Invoice Payment")
@@ -506,6 +517,7 @@ def get_items(filters, additional_query_columns, additional_conditions=None):
             sii.description,
             sii.item_name,
             sii.item_group,
+            sii.assign_to.as_("si_item_assign_to"),
             sii.item_name.as_("si_item_name"),
             sii.item_group.as_("si_item_group"),
             item.item_name.as_("i_item_name"),

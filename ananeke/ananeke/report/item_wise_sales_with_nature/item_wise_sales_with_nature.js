@@ -24,6 +24,12 @@ frappe.query_reports["Item Wise Sales with Nature"] = {
             options: "Customer",
         },
         {
+            fieldname: "employee",
+            label: __("Employee"),
+            fieldtype: "Link",
+            options: "Employee",
+        },
+        {
             fieldname: "company",
             label: __("Company"),
             fieldtype: "Link",
