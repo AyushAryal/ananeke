@@ -31,8 +31,6 @@ def _execute(filters, additional_table_columns=None):
     if not filters:
         filters = frappe._dict({})
 
-    # filters["from_date"] = filters["to_date"] = filters.get("date")
-
     include_payments = filters.get("include_payments")
     if filters.get("include_payments") and not filters.get("customer"):
         frappe.throw(_("Please select a customer for fetching payments."))
@@ -53,140 +51,88 @@ def _execute(filters, additional_table_columns=None):
     invoice_income_map, invoice_tax_map = get_invoice_tax_map(
         invoice_list, invoice_income_map, income_accounts, include_payments
     )
-    # Cost Center & Warehouse Map
     invoice_cc_wh_map = get_invoice_cc_wh_map(invoice_list)
     invoice_so_dn_map = get_invoice_so_dn_map(invoice_list)
     company_currency = frappe.get_cached_value(
         "Company", filters.get("company"), "default_currency"
     )
-    mode_of_payments = get_mode_of_payments([inv.name for inv in invoice_list])
+    mode_of_payment_details = get_mode_of_payment_details(
+        [inv.name for inv in invoice_list]
+    )
     customers = list(set(d.customer for d in invoice_list))
     customer_details = get_party_details("Customer", customers)
 
-    res = []
-    if include_payments:
-        opening_row = get_opening_row(
-            "Customer", filters.customer, getdate(filters.from_date), filters.company
-        )[0]
-        res.append(
-            {
-                "receivable_account": opening_row.account,
-                "debit": flt(opening_row.debit),
-                "credit": flt(opening_row.credit),
-                "balance": flt(opening_row.balance),
-            }
-        )
-
     data = []
     for inv in invoice_list:
-        # invoice details
-        sales_order = list(
-            set(invoice_so_dn_map.get(inv.name, {}).get("sales_order", []))
+        payment_entries = mode_of_payment_details.get(inv.name, [])
+
+        if filters.get("mode_of_payment"):
+            # Filter payment entries for specific mode of payment
+            payment_entries = [
+                (mode, amount)
+                for mode, amount in payment_entries
+                if mode == filters.get("mode_of_payment")
+            ]
+
+            # Skip if no matching payment mode
+            if not payment_entries:
+                continue
+
+        # Get base row data
+        base_row = get_base_row_data(
+            inv,
+            invoice_so_dn_map,
+            invoice_cc_wh_map,
+            customer_details,
+            additional_table_columns,
+            company_currency,
         )
-        delivery_note = list(
-            set(invoice_so_dn_map.get(inv.name, {}).get("delivery_note", []))
-        )
-        cost_center = list(
-            set(invoice_cc_wh_map.get(inv.name, {}).get("cost_center", []))
-        )
-        warehouse = list(set(invoice_cc_wh_map.get(inv.name, {}).get("warehouse", [])))
-        inv_customer_details = customer_details.get(inv.customer, {})
 
-        row = {
-            "voucher_type": inv.doctype,
-            "voucher_no": inv.name,
-            "posting_date": inv.posting_date,
-            "customer": inv.customer,
-            "customer_name": inv.customer_name,
-            **get_values_for_columns(additional_table_columns, inv),
-            "customer_group": inv_customer_details.get("customer_group"),
-            "territory": inv_customer_details.get("territory"),
-            "tax_id": inv_customer_details.get("tax_id"),
-            "receivable_account": inv.debit_to,
-            "mode_of_payment": ", ".join(
-                filter(None, mode_of_payments.get(inv.name, []))
-            ),
-            "project": inv.project,
-            "owner": inv.owner,
-            "remarks": inv.remarks,
-            "sales_order": ", ".join(sales_order),
-            "delivery_note": ", ".join(delivery_note),
-            "cost_center": ", ".join(cost_center),
-            "warehouse": ", ".join(warehouse),
-            "currency": company_currency,
-        }
-
-        # map income values
-        base_net_total = 0
-        for income_acc in income_accounts:
-            if inv.is_internal_customer and inv.company == inv.represents_company:
-                income_amount = 0
-            else:
-                income_amount = flt(
-                    invoice_income_map.get(inv.name, {}).get(income_acc)
-                )
-
-            base_net_total += income_amount
-            row.update({frappe.scrub(income_acc): income_amount})
-
-        # Add amount in unrealized account
-        for account in unrealized_profit_loss_accounts:
+        if not payment_entries:
+            # If no payment entries, create a single row with empty mode of payment
+            row = base_row.copy()
             row.update(
-                {
-                    frappe.scrub(account + "_unrealized"): flt(
-                        internal_invoice_map.get((inv.name, account))
-                    )
-                }
+                get_amount_details(
+                    inv,
+                    invoice_income_map,
+                    internal_invoice_map,
+                    invoice_tax_map,
+                    income_accounts,
+                    tax_accounts,
+                    unrealized_profit_loss_accounts,
+                    company_currency,
+                )
             )
-
-        # net total
-        row.update({"net_total": base_net_total or inv.base_net_total})
-
-        # tax account
-        total_tax = 0
-        for tax_acc in tax_accounts:
-            if tax_acc not in income_accounts:
-                tax_amount_precision = (
-                    get_field_precision(
-                        frappe.get_meta("Sales Taxes and Charges").get_field(
-                            "tax_amount"
-                        ),
-                        currency=company_currency,
-                    )
-                    or 2
-                )
-                tax_amount = flt(
-                    invoice_tax_map.get(inv.name, {}).get(tax_acc), tax_amount_precision
-                )
-                total_tax += tax_amount
-                row.update({frappe.scrub(tax_acc): tax_amount})
-
-        # total tax, grand total, outstanding amount & rounded total
-
-        row.update(
-            {
-                "tax_total": total_tax,
-                "grand_total": inv.base_grand_total,
-                "rounded_total": inv.base_rounded_total,
-                "outstanding_amount": inv.outstanding_amount,
-            }
-        )
-
-        if inv.doctype == "Sales Invoice":
-            row.update({"debit": inv.base_grand_total, "credit": 0.0})
+            data.append(row)
         else:
-            row.update({"debit": 0.0, "credit": inv.base_grand_total})
-        data.append(row)
+            # Create separate rows for each mode of payment
+            for payment_mode, paid_amount in payment_entries:
+                row = base_row.copy()
+                row["mode_of_payment"] = payment_mode
 
-    res += sorted(data, key=lambda x: x["posting_date"])
+                # Calculate proportional amounts based on payment ratio
+                payment_ratio = (
+                    flt(paid_amount) / flt(inv.base_grand_total)
+                    if inv.base_grand_total
+                    else 0
+                )
+                amount_details = get_amount_details(
+                    inv,
+                    invoice_income_map,
+                    internal_invoice_map,
+                    invoice_tax_map,
+                    income_accounts,
+                    tax_accounts,
+                    unrealized_profit_loss_accounts,
+                    company_currency,
+                    payment_ratio,
+                )
+                row.update(amount_details)
+                data.append(row)
 
-    if include_payments:
-        running_balance = flt(opening_row.balance)
-        for row in range(1, len(res)):
-            running_balance += res[row]["debit"] - res[row]["credit"]
-            res[row].update({"balance": running_balance})
-
-    return columns, res, None, None, None, include_payments
+    return columns, sorted(
+        data, key=lambda x: (x["posting_date"], x.get("mode_of_payment", ""))
+    )
 
 
 def get_columns(invoice_list, additional_table_columns, include_payments=False):
@@ -514,16 +460,9 @@ def get_invoices(filters, additional_query_columns):
     if filters.get("customer"):
         query = query.where(si.customer == filters.customer)
 
-    if filters.get("customer_group"):
-        query = query.where(si.customer_group == filters.customer_group)
-
     query = get_conditions(filters, query, "Sales Invoice")
-    query = apply_common_conditions(
-        filters, query, doctype="Sales Invoice", child_doctype="Sales Invoice Item"
-    )
 
-    invoices = query.run(as_dict=True)
-    return invoices
+    return query.run(as_dict=True)
 
 
 def apply_common_conditions(
@@ -589,6 +528,14 @@ def get_conditions(filters, query, doctype):
     parent_doc = frappe.qb.DocType(doctype)
     if filters.get("owner"):
         query = query.where(parent_doc.owner == filters.owner)
+
+    if filters.get("from_date"):
+        query = query.where(parent_doc.posting_date >= filters.from_date)
+    if filters.get("to_date"):
+        query = query.where(parent_doc.posting_date <= filters.to_date)
+
+    if filters.get("company"):
+        query = query.where(parent_doc.company == filters.company)
 
     if filters.get("mode_of_payment"):
         sip_doc = frappe.qb.DocType("Sales Invoice Payment")
@@ -841,3 +788,154 @@ def get_mode_of_payments(invoice_list):
                 mode_of_payments.setdefault(d.invoice, []).append(d.mode_of_payment)
 
     return mode_of_payments
+
+
+def get_mode_of_payment_details(invoice_list):
+    mode_of_payments = {}
+    if invoice_list:
+        inv_mop = frappe.db.sql(
+            """select parent, mode_of_payment, base_amount as paid_amount
+            from `tabSales Invoice Payment`
+            where parent in (%s)
+            group by parent, mode_of_payment"""
+            % ", ".join(["%s"] * len(invoice_list)),
+            tuple(invoice_list),
+            as_dict=1,
+        )
+
+        for d in inv_mop:
+            if d.mode_of_payment:
+                mode_of_payments.setdefault(d.parent, []).append(
+                    (d.mode_of_payment, d.paid_amount)
+                )
+
+        payment_mop = frappe.db.sql(
+            """select per.reference_name as parent, pe.mode_of_payment, 
+                   per.allocated_amount as paid_amount
+            from `tabPayment Entry Reference` per
+            join `tabPayment Entry` pe on pe.name = per.parent
+            where per.reference_doctype = 'Sales Invoice'
+            and per.reference_name in (%s)
+            group by per.reference_name, pe.mode_of_payment"""
+            % ", ".join(["%s"] * len(invoice_list)),
+            tuple(invoice_list),
+            as_dict=1,
+        )
+
+        for d in payment_mop:
+            if d.mode_of_payment:
+                mode_of_payments.setdefault(d.parent, []).append(
+                    (d.mode_of_payment, d.paid_amount)
+                )
+
+    return mode_of_payments
+
+
+def get_base_row_data(
+    inv,
+    invoice_so_dn_map,
+    invoice_cc_wh_map,
+    customer_details,
+    additional_table_columns,
+    company_currency,
+):
+    sales_order = list(set(invoice_so_dn_map.get(inv.name, {}).get("sales_order", [])))
+    delivery_note = list(
+        set(invoice_so_dn_map.get(inv.name, {}).get("delivery_note", []))
+    )
+    cost_center = list(set(invoice_cc_wh_map.get(inv.name, {}).get("cost_center", [])))
+    warehouse = list(set(invoice_cc_wh_map.get(inv.name, {}).get("warehouse", [])))
+    inv_customer_details = customer_details.get(inv.customer, {})
+
+    return {
+        "voucher_type": inv.doctype,
+        "voucher_no": inv.name,
+        "posting_date": inv.posting_date,
+        "customer": inv.customer,
+        "customer_name": inv.customer_name,
+        **get_values_for_columns(additional_table_columns, inv),
+        "customer_group": inv_customer_details.get("customer_group"),
+        "territory": inv_customer_details.get("territory"),
+        "tax_id": inv_customer_details.get("tax_id"),
+        "receivable_account": inv.debit_to,
+        "project": inv.project,
+        "owner": inv.owner,
+        "remarks": inv.remarks,
+        "sales_order": ", ".join(sales_order),
+        "delivery_note": ", ".join(delivery_note),
+        "cost_center": ", ".join(cost_center),
+        "warehouse": ", ".join(warehouse),
+        "currency": company_currency,
+    }
+
+
+def get_amount_details(
+    inv,
+    invoice_income_map,
+    internal_invoice_map,
+    invoice_tax_map,
+    income_accounts,
+    tax_accounts,
+    unrealized_profit_loss_accounts,
+    company_currency,
+    payment_ratio=1,
+):
+    row = {}
+    base_net_total = 0
+
+    # map income values
+    for income_acc in income_accounts:
+        if inv.is_internal_customer and inv.company == inv.represents_company:
+            income_amount = 0
+        else:
+            income_amount = flt(invoice_income_map.get(inv.name, {}).get(income_acc))
+
+        income_amount = flt(income_amount * payment_ratio)
+        base_net_total += income_amount
+        row.update({frappe.scrub(income_acc): income_amount})
+
+    # Add amount in unrealized account
+    for account in unrealized_profit_loss_accounts:
+        unrealized_amount = (
+            flt(internal_invoice_map.get((inv.name, account))) * payment_ratio
+        )
+        row.update({frappe.scrub(account + "_unrealized"): unrealized_amount})
+
+    # net total
+    row.update({"net_total": base_net_total or (inv.base_net_total * payment_ratio)})
+
+    # tax account
+    total_tax = 0
+    for tax_acc in tax_accounts:
+        if tax_acc not in income_accounts:
+            tax_amount_precision = (
+                get_field_precision(
+                    frappe.get_meta("Sales Taxes and Charges").get_field("tax_amount"),
+                    currency=company_currency,
+                )
+                or 2
+            )
+            tax_amount = flt(
+                invoice_tax_map.get(inv.name, {}).get(tax_acc), tax_amount_precision
+            )
+            tax_amount = flt(tax_amount * payment_ratio)
+            total_tax += tax_amount
+            row.update({frappe.scrub(tax_acc): tax_amount})
+
+    # total tax, grand total, outstanding amount & rounded total
+    grand_total = flt(inv.base_grand_total * payment_ratio)
+    row.update(
+        {
+            "tax_total": total_tax,
+            "grand_total": grand_total,
+            "rounded_total": flt(inv.base_rounded_total * payment_ratio),
+            "outstanding_amount": flt(inv.outstanding_amount * payment_ratio),
+        }
+    )
+
+    if inv.doctype == "Sales Invoice":
+        row.update({"debit": grand_total, "credit": 0.0})
+    else:
+        row.update({"debit": 0.0, "credit": grand_total})
+
+    return row
