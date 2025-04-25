@@ -1,5 +1,5 @@
 frappe.ui.form.on("Sales Invoice", {
-    onload: function(frm){
+    refresh: function(frm){
         if (frm.doc.is_return){
         frm.set_value("naming_series","ACC-SINV-RET-.YYYY.-");
         }
