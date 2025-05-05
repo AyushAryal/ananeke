@@ -461,8 +461,12 @@ def get_invoices(filters, additional_query_columns):
         query = query.where(si.customer == filters.customer)
 
     query = get_conditions(filters, query, "Sales Invoice")
+    query = apply_common_conditions(
+        filters, query, doctype="Sales Invoice", child_doctype="Sales Invoice Item"
+    )
 
-    return query.run(as_dict=True)
+    invoices = query.run(as_dict=True)
+    return invoices
 
 
 def apply_common_conditions(
