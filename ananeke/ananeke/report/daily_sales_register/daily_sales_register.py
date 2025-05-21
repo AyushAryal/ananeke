@@ -241,7 +241,10 @@ def get_amount_details(
             "tax_total": total_tax,
             "grand_total": grand_total,
             "rounded_total": inv.base_rounded_total * payment_ratio,
-            "outstanding_amount": inv.outstanding_amount * payment_ratio,
+            # unsure about this : but payment ratio is not used in ananeke's version
+            # "outstanding_amount": inv.outstanding_amount * payment_ratio,
+            "outstanding_amount": inv.outstanding_amount,
+
         }
     )
 
@@ -481,13 +484,13 @@ def get_columns(invoice_list, additional_table_columns, include_payments=False):
             #     "options": "currency",
             #     "width": 120,
             # },
-            # {
-            #     "label": _("Outstanding Amount"),
-            #     "fieldname": "outstanding_amount",
-            #     "fieldtype": "Currency",
-            #     "options": "currency",
-            #     "width": 120,
-            # },
+            {
+                "label": _("Outstanding Amount"),
+                "fieldname": "outstanding_amount",
+                "fieldtype": "Currency",
+                "options": "currency",
+                "width": 120,
+            },
         ]
 
     columns = (
