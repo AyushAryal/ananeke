@@ -126,6 +126,7 @@ def _execute(filters, additional_table_columns=None):
             "cost_center": ", ".join(cost_center),
             "warehouse": ", ".join(warehouse),
             "currency": company_currency,
+            "total": inv.base_grand_total,
         }
 
         if not payment_entries:
@@ -405,6 +406,12 @@ def get_columns(invoice_list, additional_table_columns, include_payments=False):
                 "label": _("Owner"),
                 "fieldname": "owner",
                 "fieldtype": "Data",
+                "width": 160,
+            },
+            {
+                "label": _("Sales Total"),
+                "fieldname": "total",
+                "fieldtype": "Currency",
                 "width": 160,
             },
         ]
