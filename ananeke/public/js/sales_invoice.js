@@ -16,6 +16,7 @@ frappe.ui.form.on("Sales Invoice", {
         }
     },
     cost_center: function (frm) {
+        if (frm.is_new()){
         if (frm.doc.cost_center) {
             frm.doc.items.forEach((item) => {
                     frappe.model.set_value(
@@ -28,8 +29,10 @@ frappe.ui.form.on("Sales Invoice", {
             );       
             frm.refresh_field("items");
         }
+    }
     },
     onload: function (frm) {
+        if (frm.is_new()){
         frappe.call({
             method: "frappe.client.get_value",
             args: {
@@ -46,6 +49,8 @@ frappe.ui.form.on("Sales Invoice", {
                     }
                 }
             }
+            
+        
         });
         // frappe.call({
         //     method: "ananeke.methods.employee.check_employee_checked_in_today",
@@ -86,7 +91,7 @@ frappe.ui.form.on("Sales Invoice", {
 				},
 			};
 		});
-    }
+    }}
 });
 
 

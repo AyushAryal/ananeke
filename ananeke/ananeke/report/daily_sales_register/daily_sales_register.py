@@ -126,12 +126,13 @@ def _execute(filters, additional_table_columns=None):
             "cost_center": ", ".join(cost_center),
             "warehouse": ", ".join(warehouse),
             "currency": company_currency,
-            "total": inv.base_grand_total,
+            # Remove total from base_row to avoid duplication
         }
 
         if not payment_entries:
             # If no payment entries, create a single row with empty mode of payment
             row = base_row.copy()
+            row["total"] = inv.base_grand_total  # Add total here for single payment
             row.update(
                 get_amount_details(
                     inv,
@@ -145,12 +146,11 @@ def _execute(filters, additional_table_columns=None):
             )
             data.append(row)
         else:
-            # Create separate rows for each mode of payment
             for payment_mode, paid_amount in payment_entries:
                 row = base_row.copy()
                 row["mode_of_payment"] = payment_mode
+                row["total"] = inv.base_grand_total  
 
-                # Calculate proportional amounts based on payment ratio
                 payment_ratio = (
                     flt(paid_amount) / flt(inv.base_grand_total)
                     if inv.base_grand_total
@@ -178,9 +178,58 @@ def _execute(filters, additional_table_columns=None):
             running_balance += res[row]["debit"] - res[row]["credit"]
             res[row].update({"balance": running_balance})
 
-    return columns, res, None, None, None, include_payments
+    if res and not include_payments:
+        unique_total = calculate_unique_invoice_total(res)
+        net_total_sum = calculate_column_total(res, "net_total")
+        outstanding_sum = calculate_unique_invoice_outstanding_amount(res)
+        total_row = {
+            "posting_date": "",
+            "customer": "",
+            "voucher_no": "<b>Total</b>",
+            "mode_of_payment": "",
+            "cost_center": "",
+            "owner": "", 
+            "total": unique_total,
+            "net_total": net_total_sum,
+            "outstanding_amount": outstanding_sum
+        }
+        res.append(total_row)
+            
+    return columns, res, None, None, None, True  # True to skip automatic totaling
 
 
+def calculate_unique_invoice_total(data):
+    """Calculate total counting each invoice only once"""
+    seen_invoices = set()
+    unique_total = 0
+    
+    for row in data:
+        voucher_no = row.get("voucher_no")
+        if voucher_no and voucher_no not in seen_invoices and not str(voucher_no).startswith("<b>"):
+            seen_invoices.add(voucher_no)
+            unique_total += flt(row.get("total", 0))
+    
+    return unique_total
+
+def calculate_column_total(data, column_name):
+    """Simple sum of a column across all rows"""
+    return sum(flt(row.get(column_name)) for row in data if not str(row.get("voucher_no", "")).startswith("<b>"))
+
+def calculate_unique_invoice_outstanding_amount(data):
+    """Calculate outstanding amount counting each invoice only once"""
+    seen_invoices = set()
+    unique_outstanding_total = 0
+    
+    for row in data:
+        voucher_no = row.get("voucher_no")
+        if voucher_no and voucher_no not in seen_invoices and not str(voucher_no).startswith("<b>"):
+            seen_invoices.add(voucher_no)
+            unique_outstanding_total += flt(row.get("outstanding_amount", 0))
+    
+    return unique_outstanding_total
+
+
+    
 def get_amount_details(
     inv,
     invoice_income_map,
@@ -331,6 +380,7 @@ def get_columns(invoice_list, additional_table_columns, include_payments=False):
 
     if not include_payments:
         columns += [
+            
             # {
             #     "label": _("Customer Group"),
             #     "fieldname": "customer_group",
