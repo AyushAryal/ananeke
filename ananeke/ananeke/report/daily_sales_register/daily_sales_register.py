@@ -142,6 +142,7 @@ def _execute(filters, additional_table_columns=None):
                     income_accounts,
                     tax_accounts,
                     unrealized_profit_loss_accounts,
+                    0.0  # Set payment_ratio to 0 when no payments
                 )
             )
             data.append(row)
@@ -213,7 +214,7 @@ def calculate_unique_invoice_total(data):
 
 def calculate_column_total(data, column_name):
     """Simple sum of a column across all rows"""
-    return sum(flt(row.get(column_name)) for row in data if not str(row.get("voucher_no", "")).startswith("<b>"))
+    return sum(flt(row.get(column_name, 0)) for row in data if not str(row.get("voucher_no", "")).startswith("<b>"))
 
 def calculate_unique_invoice_outstanding_amount(data):
     """Calculate outstanding amount counting each invoice only once"""
@@ -260,8 +261,11 @@ def get_amount_details(
         )
         row.update({frappe.scrub(account + "_unrealized"): unrealized_amount})
 
-    # net total
-    row.update({"net_total": base_net_total or (inv.base_net_total * payment_ratio)})
+    # net total - show paid amount or 0 if no payment
+    if payment_ratio > 0:
+        row.update({"net_total": base_net_total or (inv.base_net_total * payment_ratio)})
+    else:
+        row.update({"net_total": 0})
 
     # tax account
     total_tax = 0
