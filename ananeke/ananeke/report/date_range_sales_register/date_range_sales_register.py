@@ -62,6 +62,20 @@ def _execute(filters, additional_table_columns=None):
     customers = list(set(d.customer for d in invoice_list))
     customer_details = get_party_details("Customer", customers)
 
+    res = []
+    if include_payments:
+        opening_row = get_opening_row(
+            "Customer", filters.customer, getdate(filters.date), filters.company
+        )[0]
+        res.append(
+            {
+                "receivable_account": opening_row.account,
+                "debit": flt(opening_row.debit),
+                "credit": flt(opening_row.credit),
+                "balance": flt(opening_row.balance),
+            }
+        )
+
     data = []
     for inv in invoice_list:
         payment_entries = mode_of_payment_details.get(inv.name, [])
@@ -79,14 +93,39 @@ def _execute(filters, additional_table_columns=None):
                 continue
 
         # Get base row data
-        base_row = get_base_row_data(
-            inv,
-            invoice_so_dn_map,
-            invoice_cc_wh_map,
-            customer_details,
-            additional_table_columns,
-            company_currency,
+        sales_order = list(
+            set(invoice_so_dn_map.get(inv.name, {}).get("sales_order", []))
         )
+        delivery_note = list(
+            set(invoice_so_dn_map.get(inv.name, {}).get("delivery_note", []))
+        )
+        cost_center = list(
+            set(invoice_cc_wh_map.get(inv.name, {}).get("cost_center", []))
+        )
+        warehouse = list(set(invoice_cc_wh_map.get(inv.name, {}).get("warehouse", [])))
+        inv_customer_details = customer_details.get(inv.customer, {})
+
+        base_row = {
+            "voucher_type": inv.doctype,
+            "voucher_no": inv.name,
+            "posting_date": inv.posting_date,
+            "customer": inv.customer,
+            "customer_name": inv.customer_name,
+            **get_values_for_columns(additional_table_columns, inv),
+            "customer_group": inv_customer_details.get("customer_group"),
+            "territory": inv_customer_details.get("territory"),
+            "tax_id": inv_customer_details.get("tax_id"),
+            "receivable_account": inv.debit_to,
+            "project": inv.project,
+            "owner": inv.owner,
+            "remarks": inv.remarks,
+            "sales_order": ", ".join(sales_order),
+            "delivery_note": ", ".join(delivery_note),
+            "cost_center": ", ".join(cost_center),
+            "warehouse": ", ".join(warehouse),
+            "currency": company_currency,
+            # Remove total from base_row to avoid duplication
+        }
 
         if not payment_entries:
             # If no payment entries, create a single row with empty mode of payment
@@ -130,9 +169,196 @@ def _execute(filters, additional_table_columns=None):
                 row.update(amount_details)
                 data.append(row)
 
-    return columns, sorted(
-        data, key=lambda x: (x["posting_date"], x.get("mode_of_payment", ""))
+    res += sorted(data, key=lambda x: (x["posting_date"], x.get("mode_of_payment", "")))
+
+    if include_payments:
+        running_balance = flt(opening_row.balance)
+        for row in range(1, len(res)):
+            running_balance += res[row]["debit"] - res[row]["credit"]
+            res[row].update({"balance": running_balance})
+
+    if res and not include_payments:
+        unique_total = calculate_unique_invoice_total(res)
+        net_total_sum = calculate_column_total(res, "net_total")
+        outstanding_sum = calculate_unique_invoice_outstanding_amount(res)
+        total_row = {
+            "posting_date": "",
+            "customer": "",
+            "voucher_no": "<b>Total</b>",
+            "mode_of_payment": "",
+            "cost_center": "",
+            "owner": "",
+            "total": unique_total,
+            "net_total": net_total_sum,
+            "outstanding_amount": outstanding_sum,
+        }
+        res.append(total_row)
+
+    return columns, res, None, None, None, True  # True to skip automatic totaling
+
+
+def calculate_unique_invoice_total(data):
+    """Calculate total counting each invoice only once"""
+    seen_invoices = set()
+    unique_total = 0
+
+    for row in data:
+        voucher_no = row.get("voucher_no")
+        if (
+            voucher_no
+            and voucher_no not in seen_invoices
+            and not str(voucher_no).startswith("<b>")
+        ):
+            seen_invoices.add(voucher_no)
+            unique_total += flt(row.get("total", 0))
+
+    return unique_total
+
+
+def calculate_column_total(data, column_name):
+    """Simple sum of a column across all rows"""
+    return sum(
+        flt(row.get(column_name))
+        for row in data
+        if not str(row.get("voucher_no", "")).startswith("<b>")
     )
+
+
+def calculate_unique_invoice_outstanding_amount(data):
+    """Calculate outstanding amount counting each invoice only once"""
+    seen_invoices = set()
+    unique_outstanding_total = 0
+
+    for row in data:
+        voucher_no = row.get("voucher_no")
+        if (
+            voucher_no
+            and voucher_no not in seen_invoices
+            and not str(voucher_no).startswith("<b>")
+        ):
+            seen_invoices.add(voucher_no)
+            unique_outstanding_total += flt(row.get("outstanding_amount", 0))
+
+    return unique_outstanding_total
+
+
+def get_amount_details(
+    inv,
+    invoice_income_map,
+    internal_invoice_map,
+    invoice_tax_map,
+    income_accounts,
+    tax_accounts,
+    unrealized_profit_loss_accounts,
+    payment_ratio=1.0,
+):
+    row = {}
+    # map income values
+    base_net_total = 0
+    for income_acc in income_accounts:
+        if inv.is_internal_customer and inv.company == inv.represents_company:
+            income_amount = 0
+        else:
+            income_amount = flt(invoice_income_map.get(inv.name, {}).get(income_acc))
+            income_amount *= payment_ratio
+
+        base_net_total += income_amount
+        row.update({frappe.scrub(income_acc): income_amount})
+
+    # Add amount in unrealized account
+    for account in unrealized_profit_loss_accounts:
+        unrealized_amount = (
+            flt(internal_invoice_map.get((inv.name, account))) * payment_ratio
+        )
+        row.update({frappe.scrub(account + "_unrealized"): unrealized_amount})
+
+    # net total
+    row.update({"net_total": base_net_total or (inv.base_net_total * payment_ratio)})
+
+    # tax account
+    total_tax = 0
+    for tax_acc in tax_accounts:
+        if tax_acc not in income_accounts:
+            tax_amount_precision = (
+                get_field_precision(
+                    frappe.get_meta("Sales Taxes and Charges").get_field("tax_amount"),
+                    currency=inv.currency,
+                )
+                or 2
+            )
+            tax_amount = (
+                flt(
+                    invoice_tax_map.get(inv.name, {}).get(tax_acc), tax_amount_precision
+                )
+                * payment_ratio
+            )
+            total_tax += tax_amount
+            row.update({frappe.scrub(tax_acc): tax_amount})
+
+    # total tax, grand total, outstanding amount & rounded total
+    grand_total = inv.base_grand_total * payment_ratio
+    row.update(
+        {
+            "tax_total": total_tax,
+            "grand_total": grand_total,
+            "rounded_total": inv.base_rounded_total * payment_ratio,
+            # unsure about this : but payment ratio is not used in ananeke's version
+            # "outstanding_amount": inv.outstanding_amount * payment_ratio,
+            "outstanding_amount": inv.outstanding_amount,
+        }
+    )
+
+    if inv.doctype == "Sales Invoice":
+        row.update({"debit": grand_total, "credit": 0.0})
+    else:
+        row.update({"debit": 0.0, "credit": grand_total})
+
+    return row
+
+
+def get_mode_of_payment_details(invoice_list):
+    mode_of_payments = {}
+
+    if not invoice_list:
+        return mode_of_payments
+
+    # Get payment details from Sales Invoice Payment
+    inv_mop = frappe.db.sql(
+        """
+        select parent, mode_of_payment, sum(base_amount) as amount
+        from `tabSales Invoice Payment`
+        where parent in (%s)
+        group by parent, mode_of_payment
+    """
+        % ", ".join(["%s"] * len(invoice_list)),
+        tuple(invoice_list),
+        as_dict=1,
+    )
+
+    # Get payment details from Payment Entry
+    pe_mop = frappe.db.sql(
+        """
+        select 
+            per.reference_name as parent,
+            pe.mode_of_payment,
+            sum(per.allocated_amount) as amount
+        from `tabPayment Entry Reference` per
+        inner join `tabPayment Entry` pe on pe.name = per.parent
+        where 
+            per.reference_doctype = 'Sales Invoice'
+            and per.reference_name in (%s)
+            and pe.docstatus = 1
+        group by per.reference_name, pe.mode_of_payment
+    """
+        % ", ".join(["%s"] * len(invoice_list)),
+        tuple(invoice_list),
+        as_dict=1,
+    )
+
+    for d in inv_mop + pe_mop:
+        mode_of_payments.setdefault(d.parent, []).append([d.mode_of_payment, d.amount])
+
+    return mode_of_payments
 
 
 def get_columns(invoice_list, additional_table_columns, include_payments=False):
@@ -245,6 +471,12 @@ def get_columns(invoice_list, additional_table_columns, include_payments=False):
                 "fieldtype": "Data",
                 "width": 160,
             },
+            {
+                "label": _("Sales Total"),
+                "fieldname": "total",
+                "fieldtype": "Currency",
+                "width": 160,
+            },
         ]
     else:
         columns += [
@@ -312,13 +544,13 @@ def get_columns(invoice_list, additional_table_columns, include_payments=False):
             #     "options": "currency",
             #     "width": 120,
             # },
-            # {
-            #     "label": _("Outstanding Amount"),
-            #     "fieldname": "outstanding_amount",
-            #     "fieldtype": "Currency",
-            #     "options": "currency",
-            #     "width": 120,
-            # },
+            {
+                "label": _("Outstanding Amount"),
+                "fieldname": "outstanding_amount",
+                "fieldtype": "Currency",
+                "options": "currency",
+                "width": 120,
+            },
         ]
 
     columns = (
@@ -459,6 +691,9 @@ def get_invoices(filters, additional_query_columns):
 
     if filters.get("customer"):
         query = query.where(si.customer == filters.customer)
+
+    if filters.get("customer_group"):
+        query = query.where(si.customer_group == filters.customer_group)
 
     query = get_conditions(filters, query, "Sales Invoice")
     query = apply_common_conditions(
@@ -792,154 +1027,3 @@ def get_mode_of_payments(invoice_list):
                 mode_of_payments.setdefault(d.invoice, []).append(d.mode_of_payment)
 
     return mode_of_payments
-
-
-def get_mode_of_payment_details(invoice_list):
-    mode_of_payments = {}
-    if invoice_list:
-        inv_mop = frappe.db.sql(
-            """select parent, mode_of_payment, base_amount as paid_amount
-            from `tabSales Invoice Payment`
-            where parent in (%s)
-            group by parent, mode_of_payment"""
-            % ", ".join(["%s"] * len(invoice_list)),
-            tuple(invoice_list),
-            as_dict=1,
-        )
-
-        for d in inv_mop:
-            if d.mode_of_payment:
-                mode_of_payments.setdefault(d.parent, []).append(
-                    (d.mode_of_payment, d.paid_amount)
-                )
-
-        payment_mop = frappe.db.sql(
-            """select per.reference_name as parent, pe.mode_of_payment, 
-                   per.allocated_amount as paid_amount
-            from `tabPayment Entry Reference` per
-            join `tabPayment Entry` pe on pe.name = per.parent
-            where per.reference_doctype = 'Sales Invoice'
-            and per.reference_name in (%s)
-            group by per.reference_name, pe.mode_of_payment"""
-            % ", ".join(["%s"] * len(invoice_list)),
-            tuple(invoice_list),
-            as_dict=1,
-        )
-
-        for d in payment_mop:
-            if d.mode_of_payment:
-                mode_of_payments.setdefault(d.parent, []).append(
-                    (d.mode_of_payment, d.paid_amount)
-                )
-
-    return mode_of_payments
-
-
-def get_base_row_data(
-    inv,
-    invoice_so_dn_map,
-    invoice_cc_wh_map,
-    customer_details,
-    additional_table_columns,
-    company_currency,
-):
-    sales_order = list(set(invoice_so_dn_map.get(inv.name, {}).get("sales_order", [])))
-    delivery_note = list(
-        set(invoice_so_dn_map.get(inv.name, {}).get("delivery_note", []))
-    )
-    cost_center = list(set(invoice_cc_wh_map.get(inv.name, {}).get("cost_center", [])))
-    warehouse = list(set(invoice_cc_wh_map.get(inv.name, {}).get("warehouse", [])))
-    inv_customer_details = customer_details.get(inv.customer, {})
-
-    return {
-        "voucher_type": inv.doctype,
-        "voucher_no": inv.name,
-        "posting_date": inv.posting_date,
-        "customer": inv.customer,
-        "customer_name": inv.customer_name,
-        **get_values_for_columns(additional_table_columns, inv),
-        "customer_group": inv_customer_details.get("customer_group"),
-        "territory": inv_customer_details.get("territory"),
-        "tax_id": inv_customer_details.get("tax_id"),
-        "receivable_account": inv.debit_to,
-        "project": inv.project,
-        "owner": inv.owner,
-        "remarks": inv.remarks,
-        "sales_order": ", ".join(sales_order),
-        "delivery_note": ", ".join(delivery_note),
-        "cost_center": ", ".join(cost_center),
-        "warehouse": ", ".join(warehouse),
-        "currency": company_currency,
-    }
-
-
-def get_amount_details(
-    inv,
-    invoice_income_map,
-    internal_invoice_map,
-    invoice_tax_map,
-    income_accounts,
-    tax_accounts,
-    unrealized_profit_loss_accounts,
-    company_currency,
-    payment_ratio=1,
-):
-    row = {}
-    base_net_total = 0
-
-    # map income values
-    for income_acc in income_accounts:
-        if inv.is_internal_customer and inv.company == inv.represents_company:
-            income_amount = 0
-        else:
-            income_amount = flt(invoice_income_map.get(inv.name, {}).get(income_acc))
-
-        income_amount = flt(income_amount * payment_ratio)
-        base_net_total += income_amount
-        row.update({frappe.scrub(income_acc): income_amount})
-
-    # Add amount in unrealized account
-    for account in unrealized_profit_loss_accounts:
-        unrealized_amount = (
-            flt(internal_invoice_map.get((inv.name, account))) * payment_ratio
-        )
-        row.update({frappe.scrub(account + "_unrealized"): unrealized_amount})
-
-    # net total
-    row.update({"net_total": base_net_total or (inv.base_net_total * payment_ratio)})
-
-    # tax account
-    total_tax = 0
-    for tax_acc in tax_accounts:
-        if tax_acc not in income_accounts:
-            tax_amount_precision = (
-                get_field_precision(
-                    frappe.get_meta("Sales Taxes and Charges").get_field("tax_amount"),
-                    currency=company_currency,
-                )
-                or 2
-            )
-            tax_amount = flt(
-                invoice_tax_map.get(inv.name, {}).get(tax_acc), tax_amount_precision
-            )
-            tax_amount = flt(tax_amount * payment_ratio)
-            total_tax += tax_amount
-            row.update({frappe.scrub(tax_acc): tax_amount})
-
-    # total tax, grand total, outstanding amount & rounded total
-    grand_total = flt(inv.base_grand_total * payment_ratio)
-    row.update(
-        {
-            "tax_total": total_tax,
-            "grand_total": grand_total,
-            "rounded_total": flt(inv.base_rounded_total * payment_ratio),
-            "outstanding_amount": flt(inv.outstanding_amount * payment_ratio),
-        }
-    )
-
-    if inv.doctype == "Sales Invoice":
-        row.update({"debit": grand_total, "credit": 0.0})
-    else:
-        row.update({"debit": 0.0, "credit": grand_total})
-
-    return row

@@ -65,11 +65,11 @@ frappe.query_reports["Daily Sales Register"] = {
             fieldtype: "Link",
             options: "Item Group",
         },
-        {
-            fieldname: "include_payments",
-            label: __("Show Ledger View"),
-            fieldtype: "Check",
-            default: 0,
-        },
+        // {
+        //     fieldname: "include_payments",
+        //     label: __("Show Ledger View"),
+        //     fieldtype: "Check",
+        //     default: 0,
+        // },
     ],
 };
