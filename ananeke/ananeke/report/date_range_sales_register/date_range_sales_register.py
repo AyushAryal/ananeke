@@ -130,6 +130,7 @@ def _execute(filters, additional_table_columns=None):
         if not payment_entries:
             # If no payment entries, create a single row with empty mode of payment
             row = base_row.copy()
+            row["total"] = inv.base_grand_total  # Add total here for single payment
             row.update(
                 get_amount_details(
                     inv,
@@ -139,34 +140,32 @@ def _execute(filters, additional_table_columns=None):
                     income_accounts,
                     tax_accounts,
                     unrealized_profit_loss_accounts,
-                    company_currency,
                 )
             )
             data.append(row)
         else:
-            # Create separate rows for each mode of payment
             for payment_mode, paid_amount in payment_entries:
                 row = base_row.copy()
                 row["mode_of_payment"] = payment_mode
+                row["total"] = inv.base_grand_total
 
-                # Calculate proportional amounts based on payment ratio
                 payment_ratio = (
                     flt(paid_amount) / flt(inv.base_grand_total)
                     if inv.base_grand_total
                     else 0
                 )
-                amount_details = get_amount_details(
-                    inv,
-                    invoice_income_map,
-                    internal_invoice_map,
-                    invoice_tax_map,
-                    income_accounts,
-                    tax_accounts,
-                    unrealized_profit_loss_accounts,
-                    company_currency,
-                    payment_ratio,
+                row.update(
+                    get_amount_details(
+                        inv,
+                        invoice_income_map,
+                        internal_invoice_map,
+                        invoice_tax_map,
+                        income_accounts,
+                        tax_accounts,
+                        unrealized_profit_loss_accounts,
+                        payment_ratio,
+                    )
                 )
-                row.update(amount_details)
                 data.append(row)
 
     res += sorted(data, key=lambda x: (x["posting_date"], x.get("mode_of_payment", "")))
