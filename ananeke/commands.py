@@ -329,6 +329,25 @@ def add_commission_journal_entry_field():
 #     finally:
 #         frappe.destroy()
 
+
+# use as: bench test-command site.sb_health
+
+@click.command("create-creator-field-si")
+@click.argument("site")
+def create_creator_field_si(site):
+    try:
+        frappe.init(site=site)
+        frappe.connect()
+
+        print(f"Connected to site: {site}")
+
+    except Exception as e:
+        print(f"Failed to connect to {site}: {e}")
+    finally:
+        frappe.destroy()
+
+
+
 commands = [
     create_workspace_command,
     create_column,
@@ -337,5 +356,6 @@ commands = [
     add_cost_center_to_user,
     add_commission_expense_account_field,
     add_commission_payable_account_field,
-    add_commission_journal_entry_field
+    add_commission_journal_entry_field,
+    create_creator_field_si
 ]

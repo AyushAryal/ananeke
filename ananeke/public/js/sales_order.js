@@ -3,6 +3,8 @@ frappe.ui.form.on("Sales Order", {
         frm.set_df_property('order_type', 'hidden', 1);
         frm.set_df_property('delivery_date', 'hidden', 1);
 
+        if (frm.is_new()) {
+
         frappe.call({
             method: "frappe.client.get_value",
             args: {
@@ -23,4 +25,5 @@ frappe.ui.form.on("Sales Order", {
             }
         });
     }
+}
 });
